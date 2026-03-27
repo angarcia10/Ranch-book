@@ -48,22 +48,21 @@ body{font-family:Georgia,serif;background:#F5ECD7;color:#2C1A0E;min-height:100vh
 
 .animal-row{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #C9A96E44;background:#FDF6E8;cursor:pointer;min-height:62px;}
 .animal-row:active{background:#EDD89A;}
-.avi{font-size:1.7rem;width:44px;height:44px;background:#EDD89A;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.avi{font-size:1.7rem;width:46px;height:46px;background:#EDD89A;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .ainfo{flex:1;min-width:0;}
 .atag{font-size:1rem;font-weight:bold;color:#2C1A0E;}
-.aname{font-size:0.82rem;color:#7B3A10;margin-top:1px;}
 .ameta{font-size:0.7rem;color:#8C7A60;margin-top:2px;}
 .abadge{font-size:0.62rem;padding:3px 9px;border-radius:10px;margin-left:auto;flex-shrink:0;}
 .bc{background:#EDD89A;color:#7B4A00;} .bb{background:#C9D4E8;color:#2A3C6E;} .bk{background:#D4EAC8;color:#2E5A20;}
 .achev{color:#C9A96E;font-size:1.1rem;flex-shrink:0;margin-left:2px;}
 .empty{padding:50px 20px;text-align:center;color:#8C7A60;font-style:italic;font-size:0.95rem;line-height:1.8;}
 
+/* PROFILE */
 .profile-page{padding:16px 16px 30px;}
 .hero{background:linear-gradient(135deg,#FDF6E8,#EDD89A);border:2px solid #C9A96E;border-radius:12px;padding:16px;margin-bottom:13px;display:flex;align-items:flex-start;gap:12px;}
-.hero-avi{font-size:2.3rem;width:58px;height:58px;background:#F5ECD7;border:2px solid #C9A96E;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hero-avi{font-size:2.6rem;width:64px;height:64px;background:#F5ECD7;border:2px solid #C9A96E;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .hero-info{flex:1;min-width:0;}
 .hero-tag{font-size:1.4rem;color:#7B3A10;font-weight:bold;}
-.hero-name{font-size:0.95rem;color:#A0440A;margin-top:2px;}
 .hero-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
 .htag{font-size:0.6rem;padding:3px 9px;border-radius:10px;border:1px solid;}
 .ht1{background:#EDD89A;color:#7B4A00;border-color:#C9A96E;}
@@ -77,6 +76,7 @@ body{font-family:Georgia,serif;background:#F5ECD7;color:#2C1A0E;min-height:100vh
 .edit-btn,.del-btn{border-radius:6px;padding:9px 13px;font-size:0.78rem;font-family:Georgia,serif;cursor:pointer;border:none;white-space:nowrap;}
 .edit-btn{background:#D4A84B;color:#2C1A0E;}
 .del-btn{background:transparent;color:#C0392B;border:1px solid #C0392B;}
+
 .card{background:#FDF6E8;border:1px solid #C9A96E;border-radius:10px;padding:15px;margin-bottom:13px;}
 .card h3{font-size:0.66rem;letter-spacing:0.12em;text-transform:uppercase;color:#A0440A;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid #C9A96E;}
 .drow{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px dotted #C9A96E55;gap:10px;}
@@ -84,22 +84,47 @@ body{font-family:Georgia,serif;background:#F5ECD7;color:#2C1A0E;min-height:100vh
 .dk{font-size:0.69rem;color:#8C7A60;flex-shrink:0;}
 .dv{font-size:0.88rem;font-weight:bold;text-align:right;word-break:break-word;}
 .dv-link{font-size:0.88rem;font-weight:bold;text-align:right;color:#A0440A;cursor:pointer;text-decoration:underline;}
+
+/* CALF CHIPS — always tappable */
 .calves-wrap{display:flex;flex-direction:column;gap:8px;}
-.calf-chip{background:#EFF7EA;border:1px solid #A0C898;border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:8px;}
-.calf-chip.linked{cursor:pointer;}
+.calf-chip{background:#EFF7EA;border:1px solid #A0C898;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;min-height:56px;}
 .calf-chip:active{background:#D4EAC8;}
-.calf-chip .csex{font-size:1.1rem;}
-.calf-chip .cinfo{flex:1;}
-.calf-chip .ctag{font-weight:bold;font-size:0.9rem;}
-.calf-chip .cmeta{font-size:0.72rem;color:#6B7C5C;margin-top:2px;}
-.calf-chip .cbreed{font-size:0.68rem;color:#5A2080;background:#E8D4F0;border:1px solid #B48ACC;padding:1px 7px;border-radius:8px;display:inline-block;margin-top:3px;}
-.calf-chip .cbadge{font-size:0.62rem;color:#2E5A20;background:#C8EABF;padding:2px 8px;border-radius:8px;white-space:nowrap;}
-.calf-chip .cnobadge{font-size:0.62rem;color:#8C7A60;border:1px dashed #A0C898;padding:2px 7px;border-radius:8px;white-space:nowrap;}
-.calf-chip .cchev{color:#A0C898;font-size:1rem;}
+.cc-sex{font-size:1.2rem;flex-shrink:0;}
+.cc-info{flex:1;min-width:0;}
+.cc-tag{font-weight:bold;font-size:0.95rem;color:#2C1A0E;}
+.cc-meta{font-size:0.72rem;color:#6B7C5C;margin-top:2px;}
+.cc-cross{font-size:0.65rem;color:#5A2080;background:#E8D4F0;border:1px solid #B48ACC;padding:1px 7px;border-radius:8px;display:inline-block;margin-top:3px;}
+.cc-badge{font-size:0.62rem;color:#2E5A20;background:#C8EABF;padding:2px 8px;border-radius:8px;white-space:nowrap;flex-shrink:0;}
+.cc-noprofile{font-size:0.62rem;color:#8C7A60;border:1px dashed #A0C898;padding:2px 7px;border-radius:8px;white-space:nowrap;flex-shrink:0;}
+.cc-chev{color:#A0C898;font-size:1.1rem;flex-shrink:0;}
+
 .add-calf-link-btn{display:block;width:100%;margin-top:8px;padding:11px;background:#EFF7EA;border:2px dashed #A0C898;color:#6B7C5C;border-radius:7px;font-size:0.82rem;font-family:Georgia,serif;cursor:pointer;text-align:center;}
 .notes-text{font-style:italic;color:#8C7A60;font-size:0.88rem;line-height:1.7;}
 
-/* cross label preview in calf form */
+/* CALF DETAIL MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(44,26,14,0.72);z-index:300;align-items:flex-end;justify-content:center;padding:0;}
+.modal-overlay.open{display:flex;}
+.calf-modal{background:#FDF6E8;border:2px solid #C9A96E;border-radius:16px 16px 0 0;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding:0 0 24px;}
+.cm-handle{width:40px;height:4px;background:#C9A96E;border-radius:2px;margin:12px auto 0;}
+.cm-header{background:linear-gradient(135deg,#EFF7EA,#D4EAC8);padding:16px 18px 14px;border-bottom:1px solid #A0C898;display:flex;align-items:center;gap:12px;}
+.cm-avi{font-size:2rem;width:52px;height:52px;background:#F5ECD7;border:2px solid #A0C898;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cm-title{flex:1;}
+.cm-tag{font-size:1.2rem;font-weight:bold;color:#2E5A20;}
+.cm-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;}
+.cm-htag{font-size:0.6rem;padding:3px 9px;border-radius:10px;border:1px solid;}
+.cm-close{background:rgba(0,0,0,0.08);border:none;color:#6B7C5C;width:34px;height:34px;border-radius:50%;font-size:1.1rem;cursor:pointer;font-family:Georgia,serif;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cm-body{padding:16px 18px 0;}
+.cm-card{background:white;border:1px solid #C9A96E;border-radius:8px;padding:13px;margin-bottom:12px;}
+.cm-card h4{font-size:0.63rem;letter-spacing:0.12em;text-transform:uppercase;color:#A0440A;margin-bottom:9px;padding-bottom:6px;border-bottom:1px solid #C9A96E55;}
+.cm-row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;border-bottom:1px dotted #C9A96E44;gap:10px;}
+.cm-row:last-child{border-bottom:none;}
+.cm-k{font-size:0.68rem;color:#8C7A60;flex-shrink:0;}
+.cm-v{font-size:0.86rem;font-weight:bold;text-align:right;word-break:break-word;}
+.cm-cross-badge{font-size:0.72rem;color:#5A2080;background:#E8D4F0;border:1px solid #B48ACC;padding:3px 10px;border-radius:8px;display:inline-block;margin-bottom:10px;}
+.cm-goto-btn{display:block;width:100%;padding:13px;background:#6B7C5C;color:white;border:none;border-radius:8px;font-size:0.9rem;font-family:Georgia,serif;cursor:pointer;text-align:center;margin-top:4px;}
+.cm-noprofile-note{text-align:center;color:#8C7A60;font-style:italic;font-size:0.82rem;padding:10px 0 4px;}
+
+/* cross label preview in form */
 .cross-label-preview{margin-top:8px;padding:9px 12px;background:#F0E8F8;border:1px solid #B48ACC;border-radius:7px;font-size:0.82rem;color:#5A2080;display:none;}
 .cross-label-preview.show{display:block;}
 .cross-label-preview strong{font-size:1rem;}
@@ -117,7 +142,7 @@ body{font-family:Georgia,serif;background:#F5ECD7;color:#2C1A0E;min-height:100vh
 .fsec-label{font-size:0.63rem;letter-spacing:0.12em;text-transform:uppercase;color:#A0440A;margin-bottom:11px;display:block;font-weight:bold;}
 .type-row{display:flex;gap:8px;}
 .tybtn{flex:1;padding:11px 4px;border:2px solid #C9A96E;background:white;border-radius:8px;cursor:pointer;text-align:center;font-size:0.72rem;font-family:Georgia,serif;color:#8C7A60;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:66px;justify-content:center;}
-.tybtn .ti{font-size:1.4rem;}
+.tybtn .ti{font-size:1.5rem;}
 .tycow{border-color:#C9A96E;background:#FDF0D0;color:#7B4A00;}
 .tybull{border-color:#8BAFC1;background:#D8E8F0;color:#2A3C6E;}
 .tycalf{border-color:#A0C898;background:#E8F5E0;color:#2E5A20;}
@@ -130,7 +155,6 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 .form-footer{position:fixed;bottom:0;left:0;right:0;padding:11px 15px;background:#F0E4C8;border-top:1px solid #C9A96E;display:flex;gap:10px;z-index:100;}
 .save-btn{flex:1;padding:14px;background:#A0440A;color:white;border:none;border-radius:8px;font-size:0.95rem;font-family:Georgia,serif;cursor:pointer;}
 .cancel-btn{padding:14px 18px;background:none;border:1px solid #C9A96E;color:#8C7A60;border-radius:8px;font-size:0.95rem;font-family:Georgia,serif;cursor:pointer;}
-
 .hidden{display:none!important;}
 </style>
 </head>
@@ -138,7 +162,7 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 
 <!-- LIST -->
 <div class="page on" id="pgList">
-  <div class="topbar"><h1>🐄 Ranch Book</h1></div>
+  <div class="topbar"><h1>🐂 Ranch Book</h1><button class="back-btn" onclick="goReports()" style="background:rgba(255,255,255,0.15);font-size:0.8rem;padding:7px 12px;">📊 Reports</button></div>
   <div class="stats-bar">
     <div class="stat"><span class="n" id="stC">0</span><span class="l">Cows</span></div>
     <div class="stat"><span class="n" id="stB">0</span><span class="l">Bulls</span></div>
@@ -163,7 +187,6 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
         <select id="sortBy">
           <option value="tag">Tag # (A→Z)</option>
           <option value="tag-desc">Tag # (Z→A)</option>
-          <option value="name">Name (A→Z)</option>
           <option value="dob">DOB Newest</option>
           <option value="dob-asc">DOB Oldest</option>
           <option value="breed">Breed (A→Z)</option>
@@ -178,8 +201,8 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
             <option value="">Any</option>
             <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
             <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
-            <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option>
-            <option>Holstein</option><option>Jersey</option><option>Brown Swiss</option><option>Guernsey</option><option>Ayrshire</option>
+            <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
+            <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
             <option>Crossbred</option><option>Other</option>
           </select>
         </div>
@@ -212,7 +235,7 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
     </div>
   </div>
   <div class="active-filters" id="activeFiltersBar"></div>
-  <div class="search-bar"><input type="search" id="sq" placeholder="Search tag #, name, breed…" oninput="rl()" autocomplete="off" autocorrect="off" autocapitalize="off"></div>
+  <div class="search-bar"><input type="search" id="sq" placeholder="Search tag #, breed…" oninput="rl()" autocomplete="off" autocorrect="off" autocapitalize="off"></div>
   <div id="aList"></div>
 </div>
 
@@ -236,30 +259,24 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
     <div class="fsec">
       <span class="fsec-label">Animal Type</span>
       <div class="type-row">
-        <button class="tybtn tycow" id="tbC" onclick="setType('cow')"><span class="ti">🐄</span>Cow</button>
-        <button class="tybtn" id="tbB" onclick="setType('bull')"><span class="ti">🐂</span>Bull</button>
-        <button class="tybtn" id="tbK" onclick="setType('calf')"><span class="ti">🐮</span>Calf</button>
+        <button class="tybtn tycow" id="tbC" onclick="setType('cow')"><span class="ti" id="tiCow"></span>Cow</button>
+        <button class="tybtn" id="tbB" onclick="setType('bull')"><span class="ti" id="tiBull"></span>Bull</button>
+        <button class="tybtn" id="tbK" onclick="setType('calf')"><span class="ti" id="tiCalf"></span>Calf</button>
       </div>
       <input type="hidden" id="fType" value="cow">
     </div>
 
     <div class="fsec">
       <span class="fsec-label">Identity</span>
-      <label class="fl">Tag / Ear # <span style="color:#A0440A">★ Primary ID</span></label>
+      <label class="fl">Tag / Ear # ★ Primary ID</label>
       <input class="fi" type="text" id="fTag2" placeholder="e.g. #4472" autocomplete="off">
-      <label class="fl">Name / Nickname (optional)</label>
-      <input class="fi" type="text" id="fName" placeholder="e.g. Bessie" autocomplete="off">
       <label class="fl">Breed</label>
       <select class="fi" id="fBreed">
         <option value="">— Select Breed —</option>
-        <optgroup label="Beef Breeds">
-          <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
-          <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
-          <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option>
-        </optgroup>
-        <optgroup label="Dairy Breeds">
-          <option>Holstein</option><option>Jersey</option><option>Brown Swiss</option><option>Guernsey</option><option>Ayrshire</option>
-        </optgroup>
+        <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
+        <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
+        <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
+        <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
         <option value="Crossbred">Crossbred / Mixed</option>
         <option value="Other">Other</option>
       </select>
@@ -312,24 +329,21 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
     <div class="fsec">
       <span class="fsec-label">Parentage</span>
       <div class="two">
-        <div>
-          <label class="fl">Sire (Father) Tag/Name</label>
-          <input class="fi" type="text" id="fSire" placeholder="e.g. #1012 Ranger" autocomplete="off">
-        </div>
-        <div>
-          <label class="fl">Sire Breed</label>
+        <div><label class="fl">Sire (Father) Tag #</label><input class="fi" type="text" id="fSire" placeholder="e.g. #1012" autocomplete="off"></div>
+        <div><label class="fl">Sire Breed</label>
           <select class="fi" id="fSireBreed" onchange="updateCrossLabel()">
             <option value="">— Unknown —</option>
             <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
             <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
-            <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option>
-            <option>Holstein</option><option>Jersey</option><option>Brown Swiss</option><option>Guernsey</option><option>Ayrshire</option>
+            <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
+            <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
             <option value="Crossbred">Crossbred</option><option value="Other">Other</option>
           </select>
         </div>
       </div>
       <label class="fl">Dam (Mother)</label>
       <div id="damFieldWrap"></div>
+      <div id="crossLabelPreview" class="cross-label-preview"></div>
     </div>
 
     <!-- Sex: calves only -->
@@ -361,30 +375,53 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
   </div>
 </div>
 
+<!-- CALF DETAIL MODAL (slides up from bottom) -->
+<div class="modal-overlay" id="calfModal" onclick="handleModalTap(event)">
+  <div class="calf-modal" id="calfModalBox">
+    <div class="cm-handle"></div>
+    <div class="cm-header">
+      <div class="cm-avi" id="cmAvi">🐮</div>
+      <div class="cm-title">
+        <div class="cm-tag" id="cmTag">—</div>
+        <div class="cm-tags" id="cmTags"></div>
+      </div>
+      <button class="cm-close" onclick="closeCalfModal()">✕</button>
+    </div>
+    <div class="cm-body" id="cmBody"></div>
+  </div>
+</div>
+
+<!-- REPORTS PAGE -->
+<div class="page" id="pgReports">
+  <div class="topbar">
+    <button class="back-btn" onclick="goList()">‹ Back</button>
+    <h1>📊 Herd Reports</h1>
+  </div>
+  <div id="reportBody" style="padding:16px 16px 40px;background:#EDE0C4;min-height:100vh;overflow-y:auto;"></div>
+</div>
+
 <script>
 var A=[];
-try{A=JSON.parse(localStorage.getItem('rb7')||'[]');}catch(e){}
+try{A=JSON.parse(localStorage.getItem('rb8')||'[]');}catch(e){}
 var selId=null,editId=null,typeFilt='all',activeFilters={},pregState='unknown',presetMotherID=null;
 
-// Breed abbreviation map
 var BREED_ABBR={
   'Angus':'A','Hereford':'H','Simmental':'S','Charolais':'C','Limousin':'L',
   'Shorthorn':'SH','Brangus':'BG','Brahman':'BR','Red Angus':'RA','Longhorn':'LH',
-  'Gelbvieh':'G','Holstein':'HO','Jersey':'J','Brown Swiss':'BS','Guernsey':'GU',
-  'Ayrshire':'AY','Crossbred':'X','Other':'O'
+  'Gelbvieh':'G','Beefmaster':'BM','Santa Gertrudis':'SG','Salers':'SA',
+  'Piedmontese':'P','Murray Grey':'MG','Crossbred':'X','Other':'O'
 };
 
 function breedAbbr(b){return b?(BREED_ABBR[b]||b.charAt(0).toUpperCase()):'?';}
-
-function crossLabel(sireBreed, damBreed){
-  if (!sireBreed && !damBreed) return null;
-  if (!sireBreed || !damBreed) return null;
-  if (sireBreed===damBreed) return sireBreed; // purebred
-  return breedAbbr(sireBreed)+breedAbbr(damBreed)+' Cross';
+function crossLabel(sb,db){
+  if(!sb||!db)return null;
+  if(sb===db)return sb+' (Purebred)';
+  return breedAbbr(sb)+breedAbbr(db)+' Cross';
 }
 
-function sv(){try{localStorage.setItem('rb7',JSON.stringify(A));}catch(e){}}
+function sv(){try{localStorage.setItem('rb8',JSON.stringify(A));}catch(e){}}
 function uid(){return 'a'+Date.now()+Math.floor(Math.random()*9999);}
+// Emoji icons
 function emo(t){return t==='bull'?'🐂':t==='calf'?'🐮':'🐄';}
 function calcAge(dob){
   if(!dob)return null;
@@ -395,14 +432,14 @@ function calcAge(dob){
   var y=Math.floor(m/12),r=m%12;
   return r?y+' yr '+r+' mo':y+' yr';
 }
-var MONTHS=['','January','February','March','April','May','June','July','August','September','October','November','December'];
+var MON=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function fmtDate(d){
   if(!d)return null;
   var p=d.split('-');
   if(p.length<3)return d;
-  return MONTHS[parseInt(p[1])]+' '+parseInt(p[2])+', '+p[0];
+  return MON[parseInt(p[1])]+' '+parseInt(p[2])+', '+p[0];
 }
-function displayId(a){return a.tag||a.name||'(No Tag)';}
+function displayId(a){return a.tag||'(No Tag)';}
 function sp(id){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
   document.getElementById(id).classList.add('on');
@@ -451,31 +488,22 @@ function clearFilters(){
   ['ffTag','ffDobFrom','ffDobTo','ffWtMin','ffWtMax'].forEach(function(i){document.getElementById(i).value='';});
   ['ffBreed','ffStatus','ffPreg'].forEach(function(i){document.getElementById(i).value='';});
   document.getElementById('sortBy').value='tag';
-  activeFilters={};
-  updateFilterBar();
-  rl();
+  activeFilters={};updateFilterBar();rl();
 }
 
 function updateFilterBar(){
   var parts=[];
-  if(activeFilters.tag) parts.push('Tag: "'+activeFilters.tag+'"');
-  if(activeFilters.breed) parts.push('Breed: '+activeFilters.breed);
-  if(activeFilters.status) parts.push('Status: '+activeFilters.status);
-  if(activeFilters.preg) parts.push('Pregnancy: '+activeFilters.preg);
-  if(activeFilters.dobFrom) parts.push('DOB from: '+activeFilters.dobFrom);
-  if(activeFilters.dobTo) parts.push('DOB to: '+activeFilters.dobTo);
-  if(activeFilters.wtMin) parts.push('Wt ≥ '+activeFilters.wtMin+'lbs');
-  if(activeFilters.wtMax) parts.push('Wt ≤ '+activeFilters.wtMax+'lbs');
+  if(activeFilters.tag)parts.push('Tag:"'+activeFilters.tag+'"');
+  if(activeFilters.breed)parts.push('Breed:'+activeFilters.breed);
+  if(activeFilters.status)parts.push('Status:'+activeFilters.status);
+  if(activeFilters.preg)parts.push('Preg:'+activeFilters.preg);
+  if(activeFilters.dobFrom)parts.push('From:'+activeFilters.dobFrom);
+  if(activeFilters.dobTo)parts.push('To:'+activeFilters.dobTo);
+  if(activeFilters.wtMin)parts.push('Wt≥'+activeFilters.wtMin);
+  if(activeFilters.wtMax)parts.push('Wt≤'+activeFilters.wtMax);
   var bar=document.getElementById('activeFiltersBar');
-  if(parts.length){
-    bar.className='active-filters on';
-    bar.textContent='Filters: '+parts.join(' · ');
-    document.getElementById('filterInd').textContent='('+parts.length+' active)';
-  } else {
-    bar.className='active-filters';
-    bar.textContent='';
-    document.getElementById('filterInd').textContent='';
-  }
+  if(parts.length){bar.className='active-filters on';bar.textContent='Filters: '+parts.join(' · ');document.getElementById('filterInd').textContent='('+parts.length+' active)';}
+  else{bar.className='active-filters';bar.textContent='';document.getElementById('filterInd').textContent='';}
 }
 
 function rl(){
@@ -483,7 +511,7 @@ function rl(){
   var q=(document.getElementById('sq').value||'').toLowerCase();
   var list=A.filter(function(a){
     if(typeFilt!=='all'&&a.type!==typeFilt)return false;
-    if(q&&![a.tag,a.name,a.breed,a.crossLabel].some(function(f){return(f||'').toLowerCase().indexOf(q)>=0;}))return false;
+    if(q&&![a.tag,a.breed,a.crossLabel].some(function(f){return(f||'').toLowerCase().indexOf(q)>=0;}))return false;
     if(activeFilters.tag&&(a.tag||'').toLowerCase().indexOf(activeFilters.tag)<0)return false;
     if(activeFilters.breed&&a.breed!==activeFilters.breed)return false;
     if(activeFilters.status&&a.status!==activeFilters.status)return false;
@@ -494,14 +522,9 @@ function rl(){
     if(activeFilters.wtMax&&(!a.weight||parseFloat(a.weight)>parseFloat(activeFilters.wtMax)))return false;
     return true;
   });
-
-  var sort=(activeFilters.sort)||'tag';
+  var sort=activeFilters.sort||'tag';
   list.sort(function(a,b){
-    if(sort==='tag'||sort==='tag-desc'){
-      var ta=(a.tag||a.name||'zzz').toLowerCase(),tb=(b.tag||b.name||'zzz').toLowerCase();
-      return sort==='tag'?ta.localeCompare(tb,undefined,{numeric:true}):tb.localeCompare(ta,undefined,{numeric:true});
-    }
-    if(sort==='name')return(a.name||'zzz').localeCompare(b.name||'zzz');
+    if(sort==='tag'||sort==='tag-desc'){var ta=(a.tag||'zzz').toLowerCase(),tb=(b.tag||'zzz').toLowerCase();return sort==='tag'?ta.localeCompare(tb,undefined,{numeric:true}):tb.localeCompare(ta,undefined,{numeric:true});}
     if(sort==='breed')return(a.breed||'zzz').localeCompare(b.breed||'zzz');
     if(sort==='status')return(a.status||'').localeCompare(b.status||'');
     if(sort==='dob'){if(!a.dob&&!b.dob)return 0;if(!a.dob)return 1;if(!b.dob)return -1;return b.dob.localeCompare(a.dob);}
@@ -509,7 +532,6 @@ function rl(){
     if(sort==='calving'){var ca=a.expectedCalving||'9999',cb=b.expectedCalving||'9999';return ca.localeCompare(cb);}
     return 0;
   });
-
   var html='';
   if(!list.length){
     html='<div class="empty">'+(A.length===0?'🐄<br><br>No animals yet.<br>Tap <b>Add Animal</b> to get started.':'No animals match your filters.')+'</div>';
@@ -525,7 +547,6 @@ function rl(){
         '<div class="avi">'+emo(a.type)+'</div>'+
         '<div class="ainfo">'+
           '<div class="atag">'+(a.tag||'No Tag #')+'</div>'+
-          (a.name?'<div class="aname">'+a.name+'</div>':'')+
           '<div class="ameta">'+(meta||'—')+'</div>'+
           (a.expectedCalving&&ps==='pregnant'?'<div class="ameta" style="color:#6B7C5C">📅 Due: '+fmtDate(a.expectedCalving)+'</div>':'')+
         '</div>'+
@@ -542,24 +563,19 @@ function goProf(id){
   selId=id;
   var a=A.find(function(x){return x.id===id;});
   if(!a)return;
-  document.getElementById('pTitle').textContent=a.tag||a.name||'Profile';
+  document.getElementById('pTitle').textContent=a.tag||'Profile';
   var ag=calcAge(a.dob);
-
   function dr(k,v){return v?'<div class="drow"><span class="dk">'+k+'</span><span class="dv">'+v+'</span></div>':'';}
   function drLink(k,v,lid){return v?'<div class="drow"><span class="dk">'+k+'</span><span class="dv-link" onclick="goProf(\''+lid+'\')">'+v+' ›</span></div>':'';}
 
-  // Pregnancy card
   var pregCard='';
   if(a.type==='cow'){
     var ps=a.pregnancyStatus||'unknown';
     var psLabel=ps==='pregnant'?'🟢 Pregnant':ps==='open'?'🔵 Open':'⚪ Unknown';
-    pregCard='<div class="card"><h3>Pregnancy Status</h3>'+
-      dr('Status',psLabel)+
-      (ps==='pregnant'&&a.expectedCalving?dr('Expected Calving',fmtDate(a.expectedCalving)):'')+
-    '</div>';
+    pregCard='<div class="card"><h3>Pregnancy Status</h3>'+dr('Status',psLabel)+(ps==='pregnant'&&a.expectedCalving?dr('Expected Calving',fmtDate(a.expectedCalving)):'' )+'</div>';
   }
 
-  // Calves
+  // CALVES — all tappable, showing inline detail popup
   var calHtml='';
   if(a.type==='cow'){
     var cl=a.calves||[];
@@ -568,21 +584,21 @@ function goProf(id){
       calHtml+='<p style="color:#8C7A60;font-style:italic;font-size:0.85rem">No calf records yet.</p>';
     } else {
       calHtml+='<div class="calves-wrap">';
-      cl.forEach(function(c){
+      cl.forEach(function(c,i){
         var linked=c.linkedId?A.find(function(x){return x.id===c.linkedId;}):null;
         var metaParts=[];
         if(c.calvingDate)metaParts.push('Calved: '+fmtDate(c.calvingDate));
         else if(c.year)metaParts.push('Year: '+c.year);
-        calHtml+='<div class="calf-chip'+(linked?' linked':'')+'"'+(linked?' onclick="goProf(\''+linked.id+'\')"':'')+'>'+
-          '<span class="csex">'+(c.sex==='heifer'?'♀':'♂')+'</span>'+
-          '<div class="cinfo">'+
-            '<div class="ctag">'+(c.tag||c.name||'Unnamed')+'</div>'+
-            (c.name&&c.tag?'<div class="cmeta">'+c.name+'</div>':'')+
-            (metaParts.length?'<div class="cmeta">'+metaParts.join(' · ')+'</div>':'')+
-            (c.crossLabel?'<span class="cbreed">'+c.crossLabel+'</span>':''+
-             (c.sireBreed||c.damBreed?'<span class="cbreed">'+(c.crossLabel||crossLabel(c.sireBreed,c.damBreed)||'')+'</span>':'')),
+        var cTag=c.tag||'No Tag #';
+        calHtml+='<div class="calf-chip" onclick="openCalfDetail(\''+a.id+'\','+i+')">'+
+          '<span class="cc-sex">'+(c.sex==='heifer'?'♀':'♂')+'</span>'+
+          '<div class="cc-info">'+
+            '<div class="cc-tag">'+cTag+'</div>'+
+            (metaParts.length?'<div class="cc-meta">'+metaParts.join(' · ')+'</div>':'')+
+            (c.crossLabel?'<span class="cc-cross">'+c.crossLabel+'</span>':'')+
           '</div>'+
-          (linked?'<span class="cbadge">Has Profile</span><span class="cchev">›</span>':'<span class="cnobadge">No Profile</span>')+
+          (linked?'<span class="cc-badge">Profile ›</span>':'<span class="cc-noprofile">No Profile</span>')+
+          '<span class="cc-chev">›</span>'+
         '</div>';
       });
       calHtml+='</div>';
@@ -591,36 +607,30 @@ function goProf(id){
     calHtml+='</div>';
   }
 
-  // Parentage links
   var damHtml='',sireHtml='';
   if(a.damId){var da=A.find(function(x){return x.id===a.damId;});damHtml=da?drLink('Dam (Mother)',displayId(da),da.id):dr('Dam (Mother)',a.dam);}
   else if(a.dam){damHtml=dr('Dam (Mother)',a.dam);}
-  if(a.sire||a.sireBreed){
-    var sireStr=a.sire||(a.sireBreed?'('+a.sireBreed+')':'');
-    sireHtml=dr('Sire (Father)',sireStr+(a.sireBreed&&a.sire?' — '+a.sireBreed:''));
-  }
+  var sireStr=[a.sire,a.sireBreed?'('+a.sireBreed+')':null].filter(Boolean).join(' ');
+  if(sireStr)sireHtml=dr('Sire (Father)',sireStr);
 
-  // Breed display
   var breedDisplay=a.crossLabel||a.breed||null;
   var pregTag='';
   if(a.type==='cow'){
     if(a.pregnancyStatus==='pregnant')pregTag='<span class="htag ht-pregnant">🟢 Pregnant</span>';
     else if(a.pregnancyStatus==='open')pregTag='<span class="htag ht-open">🔵 Open</span>';
   }
-  var crossTag=a.crossLabel?'<span class="htag ht-cross">'+a.crossLabel+'</span>':'';
 
   document.getElementById('pBody').innerHTML=
     '<div class="hero">'+
       '<div class="hero-avi">'+emo(a.type)+'</div>'+
       '<div class="hero-info">'+
         '<div class="hero-tag">'+(a.tag||'No Tag #')+'</div>'+
-        (a.name?'<div class="hero-name">'+a.name+'</div>':'')+
         '<div class="hero-tags">'+
           '<span class="htag ht1">'+a.type+'</span>'+
           (ag?'<span class="htag ht3">'+ag+'</span>':(a.age?'<span class="htag ht3">'+a.age+'</span>':''))+
           (a.status?'<span class="htag ht4">'+a.status+'</span>':'')+
           (breedDisplay?'<span class="htag ht2">'+breedDisplay+'</span>':'')+
-          crossTag+pregTag+
+          pregTag+
         '</div>'+
       '</div>'+
       '<div class="hero-btns">'+
@@ -630,7 +640,7 @@ function goProf(id){
     '</div>'+
     pregCard+
     '<div class="card"><h3>Identity</h3>'+
-      dr('Tag / Ear #',a.tag)+dr('Name',a.name)+
+      dr('Tag / Ear #',a.tag)+
       dr('Breed',a.crossLabel?a.crossLabel+(a.breed?' ('+a.breed+')':''):a.breed)+
       dr('Color',a.color)+
       (a.type==='calf'?dr('Sex',a.sex==='heifer'?'♀ Heifer':a.sex==='steer'?'♂ Steer':'♂ Bull Calf'):'')+
@@ -639,15 +649,79 @@ function goProf(id){
       dr('Date of Birth',fmtDate(a.dob))+dr('Calculated Age',ag)+dr('Age (entered)',a.age)+dr('Acquired',fmtDate(a.acquired))+dr('Status',a.status)+
     '</div>'+
     '<div class="card"><h3>Physical</h3>'+dr('Weight',a.weight?a.weight+' lbs':null)+dr('Body Condition',a.bcs)+'</div>'+
-    '<div class="card"><h3>Parentage</h3>'+
-      sireHtml+
-      (a.sireBreed?dr('Sire Breed',a.sireBreed):'')+
-      damHtml+
-    '</div>'+
+    '<div class="card"><h3>Parentage</h3>'+sireHtml+(a.sireBreed&&!a.sire?dr('Sire Breed',a.sireBreed):'')+damHtml+'</div>'+
     calHtml+
     (a.notes?'<div class="card"><h3>Notes</h3><p class="notes-text">'+a.notes.replace(/\n/g,'<br>')+'</p></div>':'');
 
   sp('pgProf');
+}
+
+// CALF DETAIL MODAL
+function openCalfDetail(cowId, calfIndex){
+  var cow=A.find(function(x){return x.id===cowId;});
+  if(!cow||!cow.calves)return;
+  var c=cow.calves[calfIndex];
+  if(!c)return;
+
+  var linked=c.linkedId?A.find(function(x){return x.id===c.linkedId;}):null;
+  var cTag=c.tag||'No Tag #';
+
+  document.getElementById('cmAvi').textContent='🐮';
+  document.getElementById('cmTag').textContent=cTag;
+
+  // Tags row
+  var tagsHtml='';
+  tagsHtml+='<span class="cm-htag ht3">'+(c.sex==='heifer'?'♀ Heifer':c.sex==='steer'?'♂ Steer':'♂ Bull Calf')+'</span>';
+  if(c.crossLabel)tagsHtml+='<span class="cm-htag ht-cross">'+c.crossLabel+'</span>';
+  if(c.calvingDate){var ag2=calcAge(c.calvingDate);if(ag2)tagsHtml+='<span class="cm-htag ht2">'+ag2+'</span>';}
+  document.getElementById('cmTags').innerHTML=tagsHtml;
+
+  // Body
+  var body='';
+
+  // Calving & parentage card
+  body+='<div class="cm-card"><h4>Birth &amp; Parentage</h4>';
+  if(c.calvingDate)body+='<div class="cm-row"><span class="cm-k">Calving Date</span><span class="cm-v">'+fmtDate(c.calvingDate)+'</span></div>';
+  else if(c.year)body+='<div class="cm-row"><span class="cm-k">Birth Year</span><span class="cm-v">'+c.year+'</span></div>';
+  body+='<div class="cm-row"><span class="cm-k">Dam (Mother)</span><span class="cm-v">'+(cow.tag||'This Cow')+'</span></div>';
+  if(c.sireBreed)body+='<div class="cm-row"><span class="cm-k">Sire Breed</span><span class="cm-v">'+c.sireBreed+'</span></div>';
+  if(cow.breed)body+='<div class="cm-row"><span class="cm-k">Dam Breed</span><span class="cm-v">'+cow.breed+'</span></div>';
+  body+='</div>';
+
+  // Cross label callout
+  if(c.crossLabel){
+    body+='<div style="text-align:center;margin-bottom:12px;"><span class="cm-cross-badge">'+c.crossLabel+'</span></div>';
+  }
+
+  // Profile or no-profile section
+  if(linked){
+    var ag3=calcAge(linked.dob);
+    body+='<div class="cm-card"><h4>Full Profile Details</h4>';
+    if(linked.breed||linked.crossLabel)body+='<div class="cm-row"><span class="cm-k">Breed</span><span class="cm-v">'+(linked.crossLabel||linked.breed)+'</span></div>';
+    if(linked.dob)body+='<div class="cm-row"><span class="cm-k">Date of Birth</span><span class="cm-v">'+fmtDate(linked.dob)+'</span></div>';
+    if(ag3)body+='<div class="cm-row"><span class="cm-k">Age</span><span class="cm-v">'+ag3+'</span></div>';
+    if(linked.weight)body+='<div class="cm-row"><span class="cm-k">Weight</span><span class="cm-v">'+linked.weight+' lbs</span></div>';
+    if(linked.bcs)body+='<div class="cm-row"><span class="cm-k">Body Condition</span><span class="cm-v">'+linked.bcs+'</span></div>';
+    if(linked.color)body+='<div class="cm-row"><span class="cm-k">Color</span><span class="cm-v">'+linked.color+'</span></div>';
+    if(linked.status)body+='<div class="cm-row"><span class="cm-k">Status</span><span class="cm-v">'+linked.status+'</span></div>';
+    if(linked.notes)body+='<div class="cm-row"><span class="cm-k">Notes</span><span class="cm-v" style="font-style:italic;font-weight:normal;">'+linked.notes+'</span></div>';
+    body+='</div>';
+    body+='<button class="cm-goto-btn" onclick="closeCalfModal();goProf(\''+linked.id+'\')">View Full Profile →</button>';
+  } else {
+    body+='<p class="cm-noprofile-note">No full profile created for this calf yet.</p>';
+    body+='<button class="cm-goto-btn" style="background:#A0440A;" onclick="closeCalfModal();openForm(null,\''+cowId+'\')">＋ Add Calf Profile</button>';
+  }
+
+  document.getElementById('cmBody').innerHTML=body;
+  document.getElementById('calfModal').classList.add('open');
+}
+
+function closeCalfModal(){
+  document.getElementById('calfModal').classList.remove('open');
+}
+
+function handleModalTap(e){
+  if(e.target===document.getElementById('calfModal'))closeCalfModal();
 }
 
 function delA(id){
@@ -676,33 +750,25 @@ function buildDamField(type,currentDamId,currentDamText){
     var opts='<option value="">— Select Mother (optional) —</option>';
     cows.forEach(function(c){
       var sel=(c.id===currentDamId)?' selected':'';
-      opts+='<option value="'+c.id+'"'+sel+'>'+(c.tag||'')+(c.name?' — '+c.name:'')+'</option>';
+      opts+='<option value="'+c.id+'"'+sel+'>'+(c.tag||'No Tag')+'</option>';
     });
     wrap.innerHTML='<select class="fi" id="fDamSelect" onchange="updateCrossLabel()">'+opts+'</select>';
   } else {
-    wrap.innerHTML='<input class="fi" type="text" id="fDamText" placeholder="Cow tag or name" autocomplete="off" value="'+(currentDamText||'')+'">';
+    wrap.innerHTML='<input class="fi" type="text" id="fDamText" placeholder="Cow tag #" autocomplete="off" value="'+(currentDamText||'')+'">';
   }
 }
 
-// Auto cross label for calf type
 function updateCrossLabel(){
   if(fType!=='calf')return;
   var sireBreed=document.getElementById('fSireBreed').value;
   var damBreed='';
   var damSel=document.getElementById('fDamSelect');
-  if(damSel&&damSel.value){
-    var dam=A.find(function(x){return x.id===damSel.value;});
-    if(dam)damBreed=dam.breed||'';
-  }
+  if(damSel&&damSel.value){var dam=A.find(function(x){return x.id===damSel.value;});if(dam)damBreed=dam.breed||'';}
   var label=crossLabel(sireBreed,damBreed);
   var prev=document.getElementById('crossLabelPreview');
   if(prev){
-    if(label&&sireBreed&&damBreed){
-      prev.className='cross-label-preview show';
-      prev.innerHTML='Cross Label: <strong>'+label+'</strong>'+(sireBreed===damBreed?' (Purebred)':' ('+sireBreed+' × '+(damBreed||'?')+')');
-    } else {
-      prev.className='cross-label-preview';
-    }
+    if(label&&sireBreed&&damBreed){prev.className='cross-label-preview show';prev.innerHTML='Cross Label: <strong>'+label+'</strong> ('+sireBreed+' × '+damBreed+')';}
+    else{prev.className='cross-label-preview';}
   }
 }
 
@@ -716,35 +782,30 @@ function setType(t){
   document.getElementById('fSexSec').className='fsec'+(t==='calf'?'':' hidden');
   document.getElementById('fPregSec').className='fsec'+(t==='cow'?'':' hidden');
   buildDamField(t,presetMotherID,'');
-  // Show/hide cross label preview
-  var prev=document.getElementById('crossLabelPreview');
-  if(prev) prev.className='cross-label-preview'+(t==='calf'?'':'');
   updateCrossLabel();
 }
 
+var calfRowCounter=0;
 function addCalfRow(data){
-  var id='cf'+Date.now();
+  calfRowCounter++;
+  var id='cf'+calfRowCounter+'_'+Date.now();
   var div=document.createElement('div');
   div.className='calf-block';div.id=id;
+  // Store the linkedId as a data attribute so it survives re-reads without tag matching
+  div.setAttribute('data-linked-id', (data&&data.linkedId)?data.linkedId:'');
   div.style.cssText='background:#F5F5EC;border:1px solid #C9A96E;border-radius:8px;padding:12px;margin-bottom:10px;';
-
-  // Get dam breed from cow (current animal being edited)
   var damBreed='';
   if(editId){var cow=A.find(function(x){return x.id===editId;});if(cow)damBreed=cow.breed||'';}
-
-  // Build sire breed options
   var breedOpts='<option value="">— Unknown Sire —</option>';
-  ['Angus','Hereford','Simmental','Charolais','Limousin','Shorthorn','Brangus','Brahman','Red Angus','Longhorn','Gelbvieh','Holstein','Jersey','Brown Swiss','Guernsey','Ayrshire','Crossbred','Other'].forEach(function(b){
+  ['Angus','Hereford','Simmental','Charolais','Limousin','Shorthorn','Brangus','Brahman','Red Angus','Longhorn','Gelbvieh','Beefmaster','Santa Gertrudis','Salers','Piedmontese','Murray Grey','Crossbred','Other'].forEach(function(b){
     breedOpts+='<option value="'+b+'"'+(data&&data.sireBreed===b?' selected':'')+'>'+b+'</option>';
   });
-
   div.innerHTML=
     '<div class="two">'+
-      '<div><label class="fl">Tag / Ear #</label><input class="fi" type="text" id="'+id+'t" value="'+(data&&data.tag?data.tag:'')+'" placeholder="e.g. #55" autocomplete="off"></div>'+
-      '<div><label class="fl">Name (optional)</label><input class="fi" type="text" id="'+id+'n" value="'+(data&&data.name?data.name:'')+'" placeholder="e.g. Lucky" autocomplete="off"></div>'+
+      '<div><label class="fl">Calf Tag #</label><input class="fi" type="text" id="'+id+'t" value="'+(data&&data.tag?data.tag:'')+'" placeholder="e.g. #55" autocomplete="off"></div>'+
+      '<div><label class="fl">Calving Date</label><input class="fi" type="date" id="'+id+'d" value="'+(data&&data.calvingDate?data.calvingDate:'')+'"></div>'+
     '</div>'+
     '<div class="two">'+
-      '<div><label class="fl">Calving Date</label><input class="fi" type="date" id="'+id+'d" value="'+(data&&data.calvingDate?data.calvingDate:'')+'"></div>'+
       '<div><label class="fl">Sex</label>'+
         '<select class="fi" id="'+id+'s">'+
           '<option value="heifer"'+(data&&data.sex==='heifer'?' selected':'')+'>♀ Heifer</option>'+
@@ -752,60 +813,48 @@ function addCalfRow(data){
           '<option value="steer"'+(data&&data.sex==='steer'?' selected':'')+'>♂ Steer</option>'+
         '</select>'+
       '</div>'+
+      '<div><label class="fl">Sire Breed</label>'+
+        '<select class="fi" id="'+id+'sb" onchange="calcCalfCross(\''+id+'\',\''+damBreed+'\')">'+breedOpts+'</select>'+
+      '</div>'+
     '</div>'+
-    '<label class="fl">Sire (Father) Breed</label>'+
-    '<select class="fi" id="'+id+'sb" onchange="calcCalfCross(\''+id+'\',\''+damBreed+'\')">'+breedOpts+'</select>'+
     '<div id="'+id+'cl" class="cross-label-preview" style="margin-top:8px;"></div>'+
     '<button style="display:block;width:100%;margin-top:10px;padding:9px;background:none;border:1px solid #C0392B;color:#C0392B;border-radius:6px;font-size:0.78rem;font-family:Georgia,serif;cursor:pointer;" onclick="document.getElementById(\''+id+'\').remove()">✕ Remove</button>';
-
   document.getElementById('fCalList').appendChild(div);
-
-  // trigger label if editing existing
-  if(data&&data.sireBreed)calcCalfCross(id, damBreed);
+  if(data&&data.sireBreed)calcCalfCross(id,damBreed);
 }
 
-function calcCalfCross(id, damBreed){
-  var sb=document.getElementById(id+'sb');
-  if(!sb)return;
+function calcCalfCross(id,damBreed){
+  var sb=document.getElementById(id+'sb');if(!sb)return;
   var sireBreed=sb.value;
   var label=crossLabel(sireBreed,damBreed);
   var cl=document.getElementById(id+'cl');
   if(cl){
-    if(label&&sireBreed&&damBreed){
-      cl.className='cross-label-preview show';
-      cl.innerHTML='Cross: <strong>'+label+'</strong>'+(sireBreed===damBreed?' (Purebred)':' ('+sireBreed+' × '+damBreed+')');
-    } else if(sireBreed&&!damBreed){
-      cl.className='cross-label-preview show';
-      cl.innerHTML='Sire Breed: <strong>'+sireBreed+'</strong> (dam breed unknown — set on cow profile)';
-    } else {
-      cl.className='cross-label-preview';
-    }
+    if(label&&sireBreed&&damBreed){cl.className='cross-label-preview show';cl.innerHTML='Cross: <strong>'+label+'</strong>';}
+    else if(sireBreed&&!damBreed){cl.className='cross-label-preview show';cl.innerHTML='Sire: <strong>'+sireBreed+'</strong> (dam breed not set on cow profile)';}
+    else{cl.className='cross-label-preview';}
   }
 }
 
-function getCalves(existing){
+function getCalves(){
   var out=[];
-  // get dam breed
   var damBreed='';
   if(editId){var cow=A.find(function(x){return x.id===editId;});if(cow)damBreed=cow.breed||'';}
-
   document.querySelectorAll('#fCalList .calf-block').forEach(function(d){
-    var id=d.id;
-    var tag=document.getElementById(id+'t')?document.getElementById(id+'t').value.trim():'';
-    var name=document.getElementById(id+'n')?document.getElementById(id+'n').value.trim():'';
-    var calvingDate=document.getElementById(id+'d')?document.getElementById(id+'d').value:'';
-    var sex=document.getElementById(id+'s')?document.getElementById(id+'s').value:'heifer';
-    var sireBreed=document.getElementById(id+'sb')?document.getElementById(id+'sb').value:'';
+    var rowId=d.id;
+    var tag=document.getElementById(rowId+'t')?document.getElementById(rowId+'t').value.trim():'';
+    var calvingDate=document.getElementById(rowId+'d')?document.getElementById(rowId+'d').value:'';
+    var sex=document.getElementById(rowId+'s')?document.getElementById(rowId+'s').value:'heifer';
+    var sireBreed=document.getElementById(rowId+'sb')?document.getElementById(rowId+'sb').value:'';
     var year=calvingDate?calvingDate.substr(0,4):'';
     var cl=crossLabel(sireBreed,damBreed);
-    var existingCalf=existing?existing.find(function(c){return(c.tag&&c.tag===tag)||(c.name&&c.name===name);}):null;
-    out.push({tag:tag,name:name,calvingDate:calvingDate,year:year,sex:sex,sireBreed:sireBreed,damBreed:damBreed,crossLabel:cl,linkedId:existingCalf?existingCalf.linkedId:null});
+    var linkedId=d.getAttribute('data-linked-id')||null;
+    out.push({tag:tag,calvingDate:calvingDate,year:year,sex:sex,sireBreed:sireBreed,damBreed:damBreed,crossLabel:cl,linkedId:linkedId});
   });
   return out;
 }
 
 function resetForm(){
-  ['fName','fColor','fAge','fWt','fBCS','fSire','fNotes'].forEach(function(i){var el=document.getElementById(i);if(el)el.value='';});
+  ['fColor','fAge','fWt','fBCS','fSire','fNotes'].forEach(function(i){var el=document.getElementById(i);if(el)el.value='';});
   document.getElementById('fTag2').value='';
   document.getElementById('fBreed').value='';
   document.getElementById('fDob').value='';
@@ -822,15 +871,12 @@ function resetForm(){
 function openForm(id,motherIdPreset){
   editId=id||null;
   presetMotherID=motherIdPreset||null;
-  resetForm();
-  setType('cow');
-
+  resetForm();setType('cow');
   if(id){
     var a=A.find(function(x){return x.id===id;});
     document.getElementById('fTitle').textContent='Edit Animal';
     setType(a.type);
     document.getElementById('fTag2').value=a.tag||'';
-    document.getElementById('fName').value=a.name||'';
     document.getElementById('fBreed').value=a.breed||'';
     document.getElementById('fColor').value=a.color||'';
     document.getElementById('fDob').value=a.dob||'';
@@ -846,7 +892,7 @@ function openForm(id,motherIdPreset){
     document.getElementById('fCalving').value=a.expectedCalving||'';
     setPreg(a.pregnancyStatus||'unknown');
     buildDamField(a.type,a.damId,a.dam);
-    if(a.calves)a.calves.forEach(function(c){addCalfRow(c);});
+    if(a.calves){a.calves.forEach(function(c,i){setTimeout(function(){addCalfRow(c);},i*5);});}
     updateCrossLabel();
   } else {
     document.getElementById('fTitle').textContent='Add Animal';
@@ -858,29 +904,16 @@ function openForm(id,motherIdPreset){
 function saveAnimal(){
   var type=document.getElementById('fType').value;
   var tag=document.getElementById('fTag2').value.trim();
-  var name=document.getElementById('fName').value.trim();
-  if(!tag&&!name){alert('Please enter a Tag # or name.');return;}
-
+  if(!tag){alert('Please enter a Tag #.');return;}
   var damId=null,damText='';
-  if(type==='calf'){
-    var sel=document.getElementById('fDamSelect');
-    if(sel&&sel.value)damId=sel.value;
-  } else {
-    var txt=document.getElementById('fDamText');
-    if(txt)damText=txt.value.trim();
-  }
-
-  // compute cross label for calves
+  if(type==='calf'){var sel=document.getElementById('fDamSelect');if(sel&&sel.value)damId=sel.value;}
+  else{var txt=document.getElementById('fDamText');if(txt)damText=txt.value.trim();}
   var sireBreed=document.getElementById('fSireBreed').value;
   var damBreed='';
   if(type==='calf'&&damId){var dam2=A.find(function(x){return x.id===damId;});if(dam2)damBreed=dam2.breed||'';}
   var cl=crossLabel(sireBreed,damBreed);
-
-  var existingCalves=editId?(A.find(function(a){return a.id===editId;})||{}).calves:null;
-
   var data={
-    id:editId||uid(),type:type,
-    tag:tag,name:name,
+    id:editId||uid(),type:type,tag:tag,
     breed:document.getElementById('fBreed').value,
     color:document.getElementById('fColor').value.trim(),
     dob:document.getElementById('fDob').value,
@@ -890,46 +923,218 @@ function saveAnimal(){
     weight:document.getElementById('fWt').value,
     bcs:document.getElementById('fBCS').value,
     sire:document.getElementById('fSire').value.trim(),
-    sireBreed:sireBreed,
-    dam:damText,damId:damId,
+    sireBreed:sireBreed,dam:damText,damId:damId,
     sex:type==='calf'?document.getElementById('fSex').value:null,
     pregnancyStatus:type==='cow'?document.getElementById('fPreg').value:null,
     expectedCalving:type==='cow'&&document.getElementById('fPreg').value==='pregnant'?document.getElementById('fCalving').value:null,
-    calves:type==='cow'?getCalves(existingCalves):[],
-    crossLabel:type==='calf'?cl:null,
-    damBreed:type==='calf'?damBreed:null,
+    calves:type==='cow'?getCalves():[],
+    crossLabel:type==='calf'?cl:null,damBreed:type==='calf'?damBreed:null,
     notes:document.getElementById('fNotes').value.trim()
   };
-
-  if(editId){
-    var i=A.findIndex(function(a){return a.id===editId;});
-    if(i!==-1)A[i]=data;
-  } else {
-    A.push(data);
-  }
-
-  // Link calf to dam
+  if(editId){var i=A.findIndex(function(a){return a.id===editId;});if(i!==-1)A[i]=data;}
+  else{A.push(data);}
   if(type==='calf'&&damId){
     var dam=A.find(function(x){return x.id===damId;});
     if(dam){
       if(!dam.calves)dam.calves=[];
       var already=dam.calves.find(function(c){return c.linkedId===data.id;});
-      if(!already){
-        dam.calves.push({tag:data.tag,name:data.name,calvingDate:data.dob,year:data.dob?data.dob.substr(0,4):'',sex:data.sex,sireBreed:sireBreed,damBreed:damBreed,crossLabel:cl,linkedId:data.id});
-      } else {
-        already.tag=data.tag;already.name=data.name;
-        already.calvingDate=data.dob;already.year=data.dob?data.dob.substr(0,4):'';
-        already.sex=data.sex;already.sireBreed=sireBreed;already.damBreed=damBreed;already.crossLabel=cl;
-      }
+      if(!already){dam.calves.push({tag:data.tag,calvingDate:data.dob,year:data.dob?data.dob.substr(0,4):'',sex:data.sex,sireBreed:sireBreed,damBreed:damBreed,crossLabel:cl,linkedId:data.id});}
+      else{already.tag=data.tag;already.calvingDate=data.dob;already.year=data.dob?data.dob.substr(0,4):'';already.sex=data.sex;already.sireBreed=sireBreed;already.damBreed=damBreed;already.crossLabel=cl;}
     }
   }
+  sv();editId=data.id;
 
-  sv();
-  editId=data.id;
+  // Auto-create profiles for any new calves that don't have one yet
+  if(type==='cow'){
+    data.calves.forEach(function(c){
+      if(!c.linkedId&&c.tag){
+        var newCalfId=uid();
+        var calfProfile={
+          id:newCalfId,type:'calf',
+          tag:c.tag,
+          breed:c.crossLabel&&c.crossLabel.indexOf('Purebred')<0?c.crossLabel:(c.damBreed||''),
+          crossLabel:c.crossLabel&&c.crossLabel.indexOf('Purebred')<0?c.crossLabel:null,
+          dob:c.calvingDate||'',
+          sex:c.sex||'heifer',
+          sire:'',sireBreed:c.sireBreed||'',
+          damId:data.id,dam:data.tag,
+          damBreed:c.damBreed||'',
+          status:'active',color:'',age:'',acquired:'',weight:'',bcs:'',notes:''
+        };
+        A.push(calfProfile);
+        // Link it back onto the cow's calf record
+        c.linkedId=newCalfId;
+      }
+    });
+    // Re-save now that linkedIds are set
+    var idx=A.findIndex(function(a){return a.id===data.id;});
+    if(idx!==-1)A[idx]=data;
+    sv();
+  }
+
   goProf(data.id);
 }
 
 rl();
+
+// Set emoji icons in type selector buttons
+document.getElementById('tiCow').textContent='🐄';
+document.getElementById('tiBull').textContent='🐂';
+document.getElementById('tiCalf').textContent='🐮';
+
+// ---- REPORTS DASHBOARD ----
+function goReports(){sp('pgReports');renderReports();}
+
+function renderReports(){
+  var cows=A.filter(function(a){return a.type==='cow';});
+  var bulls=A.filter(function(a){return a.type==='bull';});
+  var calves=A.filter(function(a){return a.type==='calf';});
+  var total=A.length;
+  var now=new Date();
+
+  function donut(slices,cx,cy,r,hole){
+    var tot=slices.reduce(function(s,x){return s+x.v;},0);
+    if(!tot)return '';
+    var svg='',angle=-Math.PI/2;
+    slices.forEach(function(s){
+      var pct=s.v/tot,a2=angle+pct*2*Math.PI;
+      var x1=cx+r*Math.cos(angle),y1=cy+r*Math.sin(angle);
+      var x2=cx+r*Math.cos(a2),y2=cy+r*Math.sin(a2);
+      var xi1=cx+hole*Math.cos(angle),yi1=cy+hole*Math.sin(angle);
+      var xi2=cx+hole*Math.cos(a2),yi2=cy+hole*Math.sin(a2);
+      var lg=pct>0.5?1:0;
+      svg+='<path d="M'+xi1.toFixed(1)+' '+yi1.toFixed(1)+' L'+x1.toFixed(1)+' '+y1.toFixed(1)+' A'+r+' '+r+' 0 '+lg+' 1 '+x2.toFixed(1)+' '+y2.toFixed(1)+' L'+xi2.toFixed(1)+' '+yi2.toFixed(1)+' A'+hole+' '+hole+' 0 '+lg+' 0 '+xi1.toFixed(1)+' '+yi1.toFixed(1)+' Z" fill="'+s.c+'" stroke="white" stroke-width="1.5"/>';
+      angle=a2;
+    });
+    return svg;
+  }
+
+  function barChart(items){
+    if(!items.length)return noData();
+    var max=Math.max.apply(null,items.map(function(i){return i.v;}));
+    if(!max)return noData();
+    return items.map(function(i){
+      var pct=Math.round(i.v/max*100);
+      return '<div style="margin-bottom:11px;">'+
+        '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">'+
+          '<span style="font-size:0.8rem;color:#2C1A0E;font-weight:bold;">'+i.l+'</span>'+
+          '<span style="font-size:0.8rem;color:#8C7A60;font-weight:bold;">'+i.v+'</span>'+
+        '</div>'+
+        '<div style="background:#EDD89A;border-radius:5px;height:20px;overflow:hidden;">'+
+          '<div style="background:'+i.c+';height:100%;width:'+pct+'%;border-radius:5px;"></div>'+
+        '</div></div>';
+    }).join('');
+  }
+
+  function noData(){return '<p style="color:#8C7A60;font-style:italic;font-size:0.85rem;padding:4px 0;">No data recorded yet.</p>';}
+
+  function rCard(title,content){
+    return '<div style="background:#FDF6E8;border:1px solid #C9A96E;border-radius:10px;padding:16px;margin-bottom:14px;">'+
+      '<h3 style="font-size:0.65rem;letter-spacing:0.13em;text-transform:uppercase;color:#A0440A;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #C9A96E;">'+title+'</h3>'+content+'</div>';
+  }
+
+  function sRow(k,v,c){
+    return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dotted #C9A96E55;">'+
+      '<span style="font-size:0.78rem;color:#8C7A60;">'+k+'</span>'+
+      '<span style="font-size:0.9rem;font-weight:bold;color:'+(c||'#2C1A0E')+';">'+v+'</span></div>';
+  }
+
+  function legend(slices){
+    return '<div style="display:flex;flex-wrap:wrap;justify-content:center;margin-bottom:12px;">'+
+      slices.map(function(s){return '<span style="display:inline-flex;align-items:center;gap:5px;margin:3px 8px 3px 0;font-size:0.75rem;"><span style="width:10px;height:10px;border-radius:50%;background:'+s.c+';display:inline-block;flex-shrink:0;"></span>'+s.l+' ('+s.v+')</span>';}).join('')+
+    '</div>';
+  }
+
+  var C=['#A0440A','#C9762A','#D4A84B','#A0C898','#6B7C5C','#8BAFC1','#C9A96E','#B48ACC','#8B5E3C','#4A7C59'];
+
+  // 1. HERD OVERVIEW
+  var hfrs=calves.filter(function(c){return c.sex==='heifer';}).length;
+  var blCvs=calves.filter(function(c){return c.sex==='bull-calf';}).length;
+  var strs=calves.filter(function(c){return c.sex==='steer';}).length;
+  var ovS=[{l:'Cows',v:cows.length,c:C[0]},{l:'Bulls',v:bulls.length,c:C[5]},{l:'Calves',v:calves.length,c:C[3]}].filter(function(s){return s.v>0;});
+  var ovSvg=total?('<svg width="130" height="130" style="display:block;margin:0 auto 10px;">'+donut(ovS,65,65,56,33)+'<text x="65" y="61" text-anchor="middle" font-family="Georgia,serif" font-size="22" font-weight="bold" fill="#2C1A0E">'+total+'</text><text x="65" y="75" text-anchor="middle" font-family="Georgia,serif" font-size="10" fill="#8C7A60">TOTAL HEAD</text></svg>'):'';
+  var ov=ovSvg+legend(ovS)+sRow('Cows',cows.length,'#7B4A00')+sRow('Bulls',bulls.length,'#2A3C6E')+sRow('Calves',calves.length,'#2E5A20')+'<div style="margin-top:8px;">'+sRow('Heifers (♀)',hfrs)+sRow('Bull Calves (♂)',blCvs)+sRow('Steers',strs)+'</div>';
+
+  // 2. PREGNANCY
+  var pregCt=cows.filter(function(c){return c.pregnancyStatus==='pregnant';}).length;
+  var openCt=cows.filter(function(c){return c.pregnancyStatus==='open';}).length;
+  var unkCt=cows.length-pregCt-openCt;
+  var pS=[{l:'Pregnant',v:pregCt,c:'#6B7C5C'},{l:'Open',v:openCt,c:C[2]},{l:'Unknown',v:unkCt,c:C[6]}].filter(function(s){return s.v>0;});
+  var pSvg=cows.length?('<svg width="120" height="120" style="display:block;margin:0 auto 10px;">'+donut(pS,60,60,52,30)+'<text x="60" y="56" text-anchor="middle" font-family="Georgia,serif" font-size="18" font-weight="bold" fill="#2C1A0E">'+cows.length+'</text><text x="60" y="68" text-anchor="middle" font-family="Georgia,serif" font-size="9" fill="#8C7A60">COWS</text></svg>'):'';
+  var pr=cows.length?(pSvg+legend(pS)+sRow('Pregnant',pregCt,'#2E5A20')+sRow('Open',openCt,'#7B4A00')+sRow('Unknown',unkCt)+sRow('Pregnancy rate',Math.round(pregCt/cows.length*100)+'%','#2E5A20')):noData();
+
+  // 3. UPCOMING CALVINGS
+  var upcoming=cows.filter(function(c){return c.pregnancyStatus==='pregnant'&&c.expectedCalving;}).sort(function(a,b){return a.expectedCalving.localeCompare(b.expectedCalving);}).slice(0,6);
+  var upHtml=upcoming.length?upcoming.map(function(c){
+    var diff=Math.round((new Date(c.expectedCalving+'T00:00:00')-now)/86400000);
+    var label=diff<0?Math.abs(diff)+' days overdue':diff===0?'Today!':diff+' days away';
+    var col=diff<0?'#C0392B':diff<14?'#C9762A':'#6B7C5C';
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px dotted #C9A96E55;">'+
+      '<div><div style="font-weight:bold;font-size:0.9rem;">'+(c.tag||'No Tag')+'</div>'+
+      '<div style="font-size:0.7rem;color:#8C7A60;">'+fmtDate(c.expectedCalving)+(c.breed?' · '+c.breed:'')+'</div></div>'+
+      '<span style="font-size:0.78rem;font-weight:bold;color:'+col+';">'+label+'</span></div>';
+  }).join(''):noData();
+
+  // 4. CALVES BY AGE
+  var ab={'< 3 mo':0,'3–6 mo':0,'6–12 mo':0,'1–2 yr':0,'2+ yr':0,'No DOB':0};
+  calves.forEach(function(c){
+    if(!c.dob){ab['No DOB']++;return;}
+    var d=new Date(c.dob+'T00:00:00');
+    var mo=(now.getFullYear()-d.getFullYear())*12+now.getMonth()-d.getMonth();
+    if(mo<3)ab['< 3 mo']++;
+    else if(mo<6)ab['3–6 mo']++;
+    else if(mo<12)ab['6–12 mo']++;
+    else if(mo<24)ab['1–2 yr']++;
+    else ab['2+ yr']++;
+  });
+  var ageItems=Object.keys(ab).map(function(k,i){return{l:k,v:ab[k],c:C[i]};}).filter(function(x){return x.v>0;});
+  var age=calves.length?(barChart(ageItems)+sRow('Total calves',calves.length)):noData();
+
+  // 5. BREED BREAKDOWN
+  var bm={};
+  A.forEach(function(a){
+    var b=(a.crossLabel&&a.crossLabel.indexOf('Purebred')<0)?a.crossLabel:(a.breed||'Unknown');
+    bm[b]=(bm[b]||0)+1;
+  });
+  var bItems=Object.keys(bm).sort(function(a,b){return bm[b]-bm[a];}).slice(0,10).map(function(k,i){return{l:k,v:bm[k],c:C[i%C.length]};});
+  var breed=bItems.length?barChart(bItems):noData();
+
+  // 6. CALVING BY YEAR
+  var ym={};
+  calves.forEach(function(c){if(c.dob){var y=c.dob.substr(0,4);ym[y]=(ym[y]||0)+1;}});
+  cows.forEach(function(c){if(c.calves)c.calves.forEach(function(cv){if(cv.calvingDate){var y=cv.calvingDate.substr(0,4);ym[y]=(ym[y]||0)+1;}});});
+  var yrItems=Object.keys(ym).sort().map(function(y,i){return{l:y,v:ym[y],c:C[i%C.length]};});
+  var yr=yrItems.length?barChart(yrItems):noData();
+
+  // 7. STATUS
+  var sm={};
+  A.forEach(function(a){var s=a.status||'active';sm[s]=(sm[s]||0)+1;});
+  var stItems=Object.keys(sm).sort(function(a,b){return sm[b]-sm[a];}).map(function(k,i){return{l:k.charAt(0).toUpperCase()+k.slice(1),v:sm[k],c:C[i]};});
+  var st=stItems.length?barChart(stItems):noData();
+
+  // 8. WEIGHT
+  function wStat(arr,label){
+    var ws=arr.filter(function(a){return a.weight&&parseFloat(a.weight)>0;}).map(function(a){return parseFloat(a.weight);});
+    if(!ws.length)return '';
+    var avg=Math.round(ws.reduce(function(s,w){return s+w;},0)/ws.length);
+    return '<div style="margin-top:6px;padding-top:6px;border-top:1px solid #C9A96E55;">'+
+      '<div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:#A0440A;margin-bottom:4px;">'+label+'</div>'+
+      sRow('Average',avg+' lbs')+sRow('Lightest',Math.min.apply(null,ws)+' lbs')+sRow('Heaviest',Math.max.apply(null,ws)+' lbs')+sRow('Records',ws.length)+'</div>';
+  }
+  var wAll=A.filter(function(a){return a.weight&&parseFloat(a.weight)>0;});
+  var wt=wAll.length?(wStat(cows,'Cows')+wStat(bulls,'Bulls')+wStat(calves,'Calves')):noData();
+
+  document.getElementById('reportBody').innerHTML=
+    rCard('🐄 Herd Overview',ov)+
+    rCard('🟢 Pregnancy Status',pr)+
+    rCard('📅 Upcoming Calvings',upHtml)+
+    rCard('🐮 Calves by Age',age)+
+    rCard('🧬 Breed Breakdown',breed)+
+    rCard('📆 Calving Activity by Year',yr)+
+    rCard('📋 Herd Status',st)+
+    rCard('⚖️ Weight Summary',wt)+
+    '<p style="text-align:center;font-size:0.7rem;color:#8C7A60;padding:8px 0 20px;">'+total+' animals recorded in Ranch Book</p>';
+}
 </script>
 </body>
 </html>
