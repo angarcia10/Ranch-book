@@ -136,7 +136,7 @@ body{font-family:Georgia,serif;background:#F5ECD7;color:#2C1A0E;min-height:100vh
 .preg-pregnant{border-color:#A0C898;background:#E8F5E0;color:#2E5A20;}
 .preg-unk{border-color:#D0D0D0;background:#F8F8F8;color:#8C7A60;}
 
-.form-page{padding:16px 16px 110px;}
+.form-page{padding:16px 16px 140px;}
 .fsec{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #C9A96E;}
 .fsec:last-child{border-bottom:none;}
 .fsec-label{font-size:0.63rem;letter-spacing:0.12em;text-transform:uppercase;color:#A0440A;margin-bottom:11px;display:block;font-weight:bold;}
@@ -270,6 +270,7 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
       <span class="fsec-label">Identity</span>
       <label class="fl">Tag / Ear # ★ Primary ID</label>
       <input class="fi" type="text" id="fTag2" placeholder="e.g. #4472" autocomplete="off">
+      <div id="fBreedWrap">
       <label class="fl">Breed</label>
       <select class="fi" id="fBreed">
         <option value="">— Select Breed —</option>
@@ -280,6 +281,7 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
         <option value="Crossbred">Crossbred / Mixed</option>
         <option value="Other">Other</option>
       </select>
+      </div>
       <label class="fl">Color / Markings</label>
       <input class="fi" type="text" id="fColor" placeholder="e.g. Black with white face" autocomplete="off">
     </div>
@@ -341,6 +343,7 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
           </select>
         </div>
       </div>
+
       <label class="fl">Dam (Mother)</label>
       <div id="damFieldWrap"></div>
       <div id="crossLabelPreview" class="cross-label-preview"></div>
@@ -405,6 +408,8 @@ var A=[];
 try{A=JSON.parse(localStorage.getItem('rb8')||'[]');}catch(e){}
 var selId=null,editId=null,typeFilt='all',activeFilters={},pregState='unknown',presetMotherID=null;
 
+var BEEF_BREEDS=['Angus','Hereford','Simmental','Charolais','Limousin','Shorthorn','Brangus','Brahman','Red Angus','Longhorn','Gelbvieh','Beefmaster','Santa Gertrudis','Salers','Piedmontese','Murray Grey'];
+
 var BREED_ABBR={
   'Angus':'A','Hereford':'H','Simmental':'S','Charolais':'C','Limousin':'L',
   'Shorthorn':'SH','Brangus':'BG','Brahman':'BR','Red Angus':'RA','Longhorn':'LH',
@@ -413,6 +418,7 @@ var BREED_ABBR={
 };
 
 function breedAbbr(b){return b?(BREED_ABBR[b]||b.charAt(0).toUpperCase()):'?';}
+
 
 function crossLabel(sb,db){
   if(!sb||!db)return null;
@@ -429,15 +435,23 @@ function crossLabelFull(sb,db){
   return breedAbbr(sb)+breedAbbr(db)+' Cross — '+sb+' × '+db;
 }
 
-// Resolve cross label for a calf animal, deriving from linked dam if needed
+// Resolve cross label for a calf — always derives from sireBreed + damBreed (refreshing dam from linked profile)
 function resolveCalfBreed(a){
   var sb=a.sireBreed||'';
   var db=a.damBreed||'';
-  // If dam is linked, pull her breed fresh
+  // Always pull dam breed fresh from linked dam profile if available
   if(a.damId){var dam=A.find(function(x){return x.id===a.damId;});if(dam&&dam.breed)db=dam.breed;}
-  if(!sb&&!db)return {short:a.crossLabel||a.breed||null,full:a.crossLabel||a.breed||null};
-  var short=crossLabel(sb,db)||(a.crossLabel||a.breed||null);
-  var full=crossLabelFull(sb,db)||(a.crossLabel||a.breed||null);
+  var short=null, full=null;
+  if(sb&&db){
+    short=crossLabel(sb,db);
+    full=crossLabelFull(sb,db);
+  } else if(a.crossLabel){
+    short=a.crossLabel;
+    full=a.crossLabel;
+  } else if(a.breed){
+    short=a.breed;
+    full=a.breed;
+  }
   return {short:short,full:full,sireBreed:sb,damBreed:db};
 }
 
@@ -562,7 +576,13 @@ function rl(){
       var ag=calcAge(a.dob);
       var ps=a.pregnancyStatus;
       var pregLabel=ps==='pregnant'?'🟢 Pregnant':ps==='open'?'🔵 Open':'';
-      var breedDisplay=a.crossLabel||a.breed||'';
+      var breedDisplay='';
+      if(a.type==='calf'){
+        var ri=resolveCalfBreed(a);
+        breedDisplay=ri.short||a.breed||'';
+      } else {
+        breedDisplay=a.breed||'';
+      }
       var meta=[breedDisplay,ag||a.age,pregLabel].filter(Boolean).join(' · ');
       var bc=a.type==='cow'?'bc':a.type==='bull'?'bb':'bk';
       html+='<div class="animal-row" onclick="goProf(\''+a.id+'\')">'+
@@ -811,10 +831,11 @@ function updateCrossLabel(){
   var damBreed='';
   var damSel=document.getElementById('fDamSelect');
   if(damSel&&damSel.value){var dam=A.find(function(x){return x.id===damSel.value;});if(dam)damBreed=dam.breed||'';}
-  var label=crossLabel(sireBreed,damBreed);
+
+  var label=crossLabelFull(sireBreed,damBreed);
   var prev=document.getElementById('crossLabelPreview');
   if(prev){
-    if(label&&sireBreed&&damBreed){prev.className='cross-label-preview show';prev.innerHTML='Cross Label: <strong>'+label+'</strong> ('+sireBreed+' × '+damBreed+')';}
+    if(label){prev.className='cross-label-preview show';prev.innerHTML='<strong>'+label+'</strong>';}
     else{prev.className='cross-label-preview';}
   }
 }
@@ -828,7 +849,10 @@ function setType(t){
   document.getElementById('fCalSec').className='fsec'+(t==='cow'?'':' hidden');
   document.getElementById('fSexSec').className='fsec'+(t==='calf'?'':' hidden');
   document.getElementById('fPregSec').className='fsec'+(t==='cow'?'':' hidden');
+  // Breed dropdown only shown for cows and bulls — calves derive breed from sire × dam
+  document.getElementById('fBreedWrap').className=(t==='calf'?'hidden':'');
   buildDamField(t,presetMotherID,'');
+
   updateCrossLabel();
 }
 
@@ -844,9 +868,12 @@ function addCalfRow(data){
   var damBreed='';
   if(editId){var cow=A.find(function(x){return x.id===editId;});if(cow)damBreed=cow.breed||'';}
   var breedOpts='<option value="">— Unknown Sire —</option>';
-  ['Angus','Hereford','Simmental','Charolais','Limousin','Shorthorn','Brangus','Brahman','Red Angus','Longhorn','Gelbvieh','Beefmaster','Santa Gertrudis','Salers','Piedmontese','Murray Grey','Crossbred','Other'].forEach(function(b){
+  BEEF_BREEDS.forEach(function(b){
     breedOpts+='<option value="'+b+'"'+(data&&data.sireBreed===b?' selected':'')+'>'+b+'</option>';
   });
+  breedOpts+='<option value="Crossbred"'+(data&&data.sireBreed==='Crossbred'?' selected':'')+'>Crossbred</option>';
+  breedOpts+='<option value="Other"'+(data&&data.sireBreed==='Other'?' selected':'')+'>Other</option>';
+
   div.innerHTML=
     '<div class="two">'+
       '<div><label class="fl">Calf Tag #</label><input class="fi" type="text" id="'+id+'t" value="'+(data&&data.tag?data.tag:'')+'" placeholder="e.g. #55" autocomplete="off"></div>'+
@@ -861,23 +888,28 @@ function addCalfRow(data){
         '</select>'+
       '</div>'+
       '<div><label class="fl">Sire Breed</label>'+
-        '<select class="fi" id="'+id+'sb" onchange="calcCalfCross(\''+id+'\',\''+damBreed+'\')">'+breedOpts+'</select>'+
+        '<select class="fi" id="'+id+'sb" onchange="onRowSireChange(\''+id+'\',\''+damBreed+'\')">'+breedOpts+'</select>'+
       '</div>'+
     '</div>'+
     '<div id="'+id+'cl" class="cross-label-preview" style="margin-top:8px;"></div>'+
     '<button style="display:block;width:100%;margin-top:10px;padding:9px;background:none;border:1px solid #C0392B;color:#C0392B;border-radius:6px;font-size:0.78rem;font-family:Georgia,serif;cursor:pointer;" onclick="document.getElementById(\''+id+'\').remove()">✕ Remove</button>';
   document.getElementById('fCalList').appendChild(div);
-  if(data&&data.sireBreed)calcCalfCross(id,damBreed);
+  if(data&&data.sireBreed)showRowCross(id,damBreed);
 }
 
-function calcCalfCross(id,damBreed){
-  var sb=document.getElementById(id+'sb');if(!sb)return;
-  var sireBreed=sb.value;
-  var label=crossLabel(sireBreed,damBreed);
+function onRowSireChange(id, damBreed){
+  // When sire breed changes, update cross label preview
+  showRowCross(id, damBreed);
+}
+
+function showRowCross(id, damBreed){
+  var sb=document.getElementById(id+'sb');
+  var sireBreed=sb?sb.value:'';
+  var resolvedDam=damBreed;
+  var label=resolvedDam&&sireBreed?crossLabelFull(sireBreed,resolvedDam):(sireBreed?sireBreed+' Sire':null);
   var cl=document.getElementById(id+'cl');
   if(cl){
-    if(label&&sireBreed&&damBreed){cl.className='cross-label-preview show';cl.innerHTML='Cross: <strong>'+label+'</strong>';}
-    else if(sireBreed&&!damBreed){cl.className='cross-label-preview show';cl.innerHTML='Sire: <strong>'+sireBreed+'</strong> (dam breed not set on cow profile)';}
+    if(label){cl.className='cross-label-preview show';cl.innerHTML='<strong>'+label+'</strong>';}
     else{cl.className='cross-label-preview';}
   }
 }
@@ -892,10 +924,11 @@ function getCalves(){
     var calvingDate=document.getElementById(rowId+'d')?document.getElementById(rowId+'d').value:'';
     var sex=document.getElementById(rowId+'s')?document.getElementById(rowId+'s').value:'heifer';
     var sireBreed=document.getElementById(rowId+'sb')?document.getElementById(rowId+'sb').value:'';
+    var resolvedDam=damBreed;
     var year=calvingDate?calvingDate.substr(0,4):'';
-    var cl=crossLabel(sireBreed,damBreed);
+    var cl=crossLabel(sireBreed,resolvedDam);
     var linkedId=d.getAttribute('data-linked-id')||null;
-    out.push({tag:tag,calvingDate:calvingDate,year:year,sex:sex,sireBreed:sireBreed,damBreed:damBreed,crossLabel:cl,linkedId:linkedId});
+    out.push({tag:tag,calvingDate:calvingDate,year:year,sex:sex,sireBreed:sireBreed,damBreed:resolvedDam,crossLabel:cl,linkedId:linkedId});
   });
   return out;
 }
@@ -911,6 +944,7 @@ function resetForm(){
   document.getElementById('fSireBreed').value='';
   document.getElementById('fCalList').innerHTML='';
   document.getElementById('fCalving').value='';
+
   setPreg('unknown');
   presetMotherID=null;
 }
@@ -924,7 +958,8 @@ function openForm(id,motherIdPreset){
     document.getElementById('fTitle').textContent='Edit Animal';
     setType(a.type);
     document.getElementById('fTag2').value=a.tag||'';
-    document.getElementById('fBreed').value=a.breed||'';
+    // Only set breed dropdown for non-calves; calves derive breed from sire x dam
+    if(a.type!=='calf') document.getElementById('fBreed').value=a.breed||'';
     document.getElementById('fColor').value=a.color||'';
     document.getElementById('fDob').value=a.dob||'';
     document.getElementById('fAge').value=a.age||'';
@@ -939,6 +974,7 @@ function openForm(id,motherIdPreset){
     document.getElementById('fCalving').value=a.expectedCalving||'';
     setPreg(a.pregnancyStatus||'unknown');
     buildDamField(a.type,a.damId,a.dam);
+
     if(a.calves){a.calves.forEach(function(c,i){setTimeout(function(){addCalfRow(c);},i*5);});}
     updateCrossLabel();
   } else {
@@ -958,10 +994,15 @@ function saveAnimal(){
   var sireBreed=document.getElementById('fSireBreed').value;
   var damBreed='';
   if(type==='calf'&&damId){var dam2=A.find(function(x){return x.id===damId;});if(dam2)damBreed=dam2.breed||'';}
+
   var cl=crossLabel(sireBreed,damBreed);
   var data={
     id:editId||uid(),type:type,tag:tag,
-    breed:document.getElementById('fBreed').value,
+    // For calves, breed = the cross label (e.g. "CA Cross"); for cows/bulls, use the breed dropdown
+    breed:type==='calf'?(cl||''):(document.getElementById('fBreed').value),
+    crossLabel:type==='calf'?cl:null,
+    sireBreed:sireBreed,
+    damBreed:type==='calf'?damBreed:null,
     color:document.getElementById('fColor').value.trim(),
     dob:document.getElementById('fDob').value,
     age:document.getElementById('fAge').value.trim(),
@@ -970,12 +1011,11 @@ function saveAnimal(){
     weight:document.getElementById('fWt').value,
     bcs:document.getElementById('fBCS').value,
     sire:document.getElementById('fSire').value.trim(),
-    sireBreed:sireBreed,dam:damText,damId:damId,
+    dam:damText,damId:damId,
     sex:type==='calf'?document.getElementById('fSex').value:null,
     pregnancyStatus:type==='cow'?document.getElementById('fPreg').value:null,
     expectedCalving:type==='cow'&&document.getElementById('fPreg').value==='pregnant'?document.getElementById('fCalving').value:null,
     calves:type==='cow'?getCalves():[],
-    crossLabel:type==='calf'?cl:null,damBreed:type==='calf'?damBreed:null,
     notes:document.getElementById('fNotes').value.trim()
   };
   if(editId){var i=A.findIndex(function(a){return a.id===editId;});if(i!==-1)A[i]=data;}
@@ -991,21 +1031,37 @@ function saveAnimal(){
   }
   sv();editId=data.id;
 
+  // AUTO-OPEN COW: if this calf is linked to a pregnant cow and its DOB is within 45 days of her expected calving date, set her to Open
+  if(type==='calf'&&damId&&data.dob){
+    var damCow=A.find(function(x){return x.id===damId;});
+    if(damCow&&damCow.pregnancyStatus==='pregnant'&&damCow.expectedCalving){
+      var calfDob=new Date(data.dob+'T00:00:00');
+      var expCalv=new Date(damCow.expectedCalving+'T00:00:00');
+      var diffDays=Math.abs(Math.round((calfDob-expCalv)/86400000));
+      if(diffDays<=45){
+        damCow.pregnancyStatus='open';
+        damCow.expectedCalving=null;
+        sv();
+      }
+    }
+  }
+
   // Auto-create profiles for any new calves that don't have one yet
   if(type==='cow'){
     data.calves.forEach(function(c){
       if(!c.linkedId&&c.tag){
         var newCalfId=uid();
+        var calfCrossLabel=c.crossLabel||crossLabel(c.sireBreed||'',c.damBreed||'');
         var calfProfile={
           id:newCalfId,type:'calf',
           tag:c.tag,
-          breed:c.crossLabel&&c.crossLabel.indexOf('Purebred')<0?c.crossLabel:(c.damBreed||''),
-          crossLabel:c.crossLabel&&c.crossLabel.indexOf('Purebred')<0?c.crossLabel:null,
+          breed:calfCrossLabel||c.damBreed||'',
+          crossLabel:calfCrossLabel||null,
           dob:c.calvingDate||'',
           sex:c.sex||'heifer',
           sire:'',sireBreed:c.sireBreed||'',
           damId:data.id,dam:data.tag,
-          damBreed:c.damBreed||'',
+          damBreed:c.damBreed||data.breed||'',
           status:'active',color:'',age:'',acquired:'',weight:'',bcs:'',notes:''
         };
         A.push(calfProfile);
@@ -1016,6 +1072,22 @@ function saveAnimal(){
     // Re-save now that linkedIds are set
     var idx=A.findIndex(function(a){return a.id===data.id;});
     if(idx!==-1)A[idx]=data;
+
+    // AUTO-OPEN: if cow is pregnant and any new calf's calving date is within 45 days of expected calving
+    if(data.pregnancyStatus==='pregnant'&&data.expectedCalving){
+      var expCalv2=new Date(data.expectedCalving+'T00:00:00');
+      var shouldOpen=data.calves.some(function(c){
+        if(!c.calvingDate)return false;
+        var cd=new Date(c.calvingDate+'T00:00:00');
+        return Math.abs(Math.round((cd-expCalv2)/86400000))<=45;
+      });
+      if(shouldOpen){
+        data.pregnancyStatus='open';
+        data.expectedCalving=null;
+        var idx2=A.findIndex(function(a){return a.id===data.id;});
+        if(idx2!==-1)A[idx2]=data;
+      }
+    }
     sv();
   }
 
@@ -1075,9 +1147,16 @@ function renderReports(){
 
   function noData(){return '<p style="color:#8C7A60;font-style:italic;font-size:0.85rem;padding:4px 0;">No data recorded yet.</p>';}
 
-  function rCard(title,content){
+  function rCard(title,content,exportKey){
+    var exportBtn=exportKey?
+      '<button onclick="exportSection(\''+exportKey+'\')" style="background:none;border:1px solid #C9A96E;color:#8C7A60;border-radius:5px;padding:3px 9px;font-size:0.62rem;font-family:Georgia,serif;cursor:pointer;white-space:nowrap;">⬇ CSV</button>':
+      '';
     return '<div style="background:#FDF6E8;border:1px solid #C9A96E;border-radius:10px;padding:16px;margin-bottom:14px;">'+
-      '<h3 style="font-size:0.65rem;letter-spacing:0.13em;text-transform:uppercase;color:#A0440A;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #C9A96E;">'+title+'</h3>'+content+'</div>';
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #C9A96E;">'+
+        '<h3 style="font-size:0.65rem;letter-spacing:0.13em;text-transform:uppercase;color:#A0440A;margin:0;">'+title+'</h3>'+
+        exportBtn+
+      '</div>'+
+      content+'</div>';
   }
 
   function sRow(k,v,c){
@@ -1290,16 +1369,183 @@ function renderReports(){
     :'');
 
   document.getElementById('reportBody').innerHTML=
-    rCard('🐄 Herd Overview',ov)+
-    rCard('🟢 Pregnancy Status',pr)+
-    rCard('📅 Upcoming Calvings',upHtml)+
-    rCard('🐮 Calves by Age',age)+
-    rCard('🛒 Calf Buyer Summary',buyerContent)+
-    rCard('🧬 Breed Breakdown — % of Herd',breedTabs)+
-    rCard('📆 Calving Activity by Year',yr)+
-    rCard('📋 Herd Status',st)+
-    rCard('⚖️ Weight Summary',wt)+
+    rCard('🐄 Herd Overview',ov,'overview')+
+    rCard('🟢 Pregnancy Status',pr,'pregnancy')+
+    rCard('📅 Upcoming Calvings',upHtml,'calvings')+
+    rCard('🐮 Calves by Age',age,'calves_age')+
+    rCard('🛒 Calf Buyer Summary',buyerContent,'buyer')+
+    rCard('🧬 Breed Breakdown — % of Herd',breedTabs,'breeds')+
+    rCard('📆 Calving Activity by Year',yr,'calving_year')+
+    rCard('📋 Herd Status',st,'status')+
+    rCard('⚖️ Weight Summary',wt,'weight')+
     '<p style="text-align:center;font-size:0.7rem;color:#8C7A60;padding:8px 0 20px;">'+total+' animals recorded in Ranch Book</p>';
+}
+
+function exportSection(key){
+  var now=new Date();
+  var dateStr=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();
+  var rows=[];
+  var filename='RanchBook_'+key+'_'+dateStr+'.csv';
+
+  function csv(v){
+    if(v===null||v===undefined)return '';
+    var s=String(v);
+    if(s.indexOf(',')>=0||s.indexOf('"')>=0||s.indexOf('\n')>=0)return '"'+s.replace(/"/g,'""')+'"';
+    return s;
+  }
+  function row(arr){return arr.map(csv).join(',');}
+
+  var cows=A.filter(function(a){return a.type==='cow';});
+  var bulls=A.filter(function(a){return a.type==='bull';});
+  var calves=A.filter(function(a){return a.type==='calf';});
+  var nowMs=now.getTime();
+
+  if(key==='overview'){
+    filename='RanchBook_HerdOverview_'+dateStr+'.csv';
+    rows.push(row(['Category','Count']));
+    rows.push(row(['Total Animals',A.length]));
+    rows.push(row(['Cows',cows.length]));
+    rows.push(row(['Bulls',bulls.length]));
+    rows.push(row(['Calves',calves.length]));
+    rows.push(row(['Heifers (female calves)',calves.filter(function(c){return c.sex==='heifer';}).length]));
+    rows.push(row(['Bull Calves',calves.filter(function(c){return c.sex==='bull-calf';}).length]));
+    rows.push(row(['Steers',calves.filter(function(c){return c.sex==='steer';}).length]));
+  }
+
+  else if(key==='pregnancy'){
+    filename='RanchBook_PregnancyStatus_'+dateStr+'.csv';
+    rows.push(row(['Tag #','Breed','Status','Expected Calving','Days Away']));
+    cows.forEach(function(c){
+      var diff='';
+      if(c.pregnancyStatus==='pregnant'&&c.expectedCalving){
+        var d=Math.round((new Date(c.expectedCalving+'T00:00:00').getTime()-nowMs)/86400000);
+        diff=d<0?Math.abs(d)+' overdue':d===0?'Today':d+' days';
+      }
+      rows.push(row([c.tag||'',c.breed||'',c.pregnancyStatus||'unknown',c.expectedCalving||'',diff]));
+    });
+  }
+
+  else if(key==='calvings'){
+    filename='RanchBook_UpcomingCalvings_'+dateStr+'.csv';
+    rows.push(row(['Tag #','Breed','Expected Calving Date','Days Away']));
+    cows.filter(function(c){return c.pregnancyStatus==='pregnant'&&c.expectedCalving;})
+      .sort(function(a,b){return a.expectedCalving.localeCompare(b.expectedCalving);})
+      .forEach(function(c){
+        var diff=Math.round((new Date(c.expectedCalving+'T00:00:00').getTime()-nowMs)/86400000);
+        var label=diff<0?Math.abs(diff)+' days overdue':diff===0?'Today':diff+' days';
+        rows.push(row([c.tag||'',c.breed||'',c.expectedCalving,label]));
+      });
+  }
+
+  else if(key==='calves_age'){
+    filename='RanchBook_CalvesByAge_'+dateStr+'.csv';
+    rows.push(row(['Tag #','Breed / Cross','Sex','Date of Birth','Age','Weight (lbs)','Status']));
+    calves.sort(function(a,b){
+      if(!a.dob&&!b.dob)return 0; if(!a.dob)return 1; if(!b.dob)return -1;
+      return a.dob.localeCompare(b.dob);
+    }).forEach(function(c){
+      var ag=calcAge(c.dob)||c.age||'';
+      var br=resolveCalfBreed(c).short||c.breed||'';
+      rows.push(row([c.tag||'',br,c.sex||'',c.dob||'',ag,c.weight||'',c.status||'']));
+    });
+  }
+
+  else if(key==='buyer'){
+    filename='RanchBook_CalfBuyerSummary_'+dateStr+'.csv';
+    rows.push('CALF BUYER SUMMARY — Generated: '+dateStr);
+    rows.push('');
+    rows.push(row(['Tag #','Sex','Breed / Cross','Sire Breed','Dam Tag','Dam Breed','Calving Date','Age','Weight (lbs)','BCS','Color','Status']));
+    calves.forEach(function(c){
+      var ag=calcAge(c.dob)||c.age||'';
+      var br=resolveCalfBreed(c).short||c.breed||'';
+      var damInfo=c.damId?A.find(function(x){return x.id===c.damId;}):null;
+      rows.push(row([
+        c.tag||'',c.sex||'',br,c.sireBreed||'',
+        damInfo?damInfo.tag||'':c.dam||'',
+        c.damBreed||'',c.dob||'',ag,c.weight||'',c.bcs||'',c.color||'',c.status||''
+      ]));
+    });
+    rows.push('');
+    rows.push(row(['Summary','Value']));
+    rows.push(row(['Total Calves',calves.length]));
+    var hfrs=calves.filter(function(c){return c.sex==='heifer';}).length;
+    var blCvs=calves.filter(function(c){return c.sex==='bull-calf';}).length;
+    var strs=calves.filter(function(c){return c.sex==='steer';}).length;
+    rows.push(row(['Heifers',hfrs+(calves.length?' ('+Math.round(hfrs/calves.length*100)+'%)':'')]));
+    rows.push(row(['Bull Calves',blCvs+(calves.length?' ('+Math.round(blCvs/calves.length*100)+'%)':'')]));
+    rows.push(row(['Steers',strs+(calves.length?' ('+Math.round(strs/calves.length*100)+'%)':'')]));
+    var wts=calves.filter(function(c){return c.weight&&parseFloat(c.weight)>0;}).map(function(c){return parseFloat(c.weight);});
+    if(wts.length){
+      rows.push(row(['Avg Weight',Math.round(wts.reduce(function(s,w){return s+w;},0)/wts.length)+' lbs']));
+      rows.push(row(['Weight Range',Math.min.apply(null,wts)+' – '+Math.max.apply(null,wts)+' lbs']));
+    }
+  }
+
+  else if(key==='breeds'){
+    filename='RanchBook_BreedBreakdown_'+dateStr+'.csv';
+    rows.push(row(['Breed / Cross','Count','% of Herd','Animal Types']));
+    var bm={};
+    var bmTypes={};
+    A.forEach(function(a){
+      var b=a.type==='calf'?(resolveCalfBreed(a).short||a.breed||'Unknown'):(a.breed||'Unknown');
+      bm[b]=(bm[b]||0)+1;
+      if(!bmTypes[b])bmTypes[b]=[];
+      if(bmTypes[b].indexOf(a.type)<0)bmTypes[b].push(a.type);
+    });
+    Object.keys(bm).sort(function(a,b){return bm[b]-bm[a];}).forEach(function(k){
+      rows.push(row([k,bm[k],Math.round(bm[k]/A.length*100)+'%',bmTypes[k].join(', ')]));
+    });
+  }
+
+  else if(key==='calving_year'){
+    filename='RanchBook_CalvingByYear_'+dateStr+'.csv';
+    rows.push(row(['Year','Calves Born']));
+    var ym={};
+    calves.forEach(function(c){if(c.dob){var y=c.dob.substr(0,4);ym[y]=(ym[y]||0)+1;}});
+    cows.forEach(function(c){if(c.calves)c.calves.forEach(function(cv){if(cv.calvingDate){var y=cv.calvingDate.substr(0,4);ym[y]=(ym[y]||0)+1;}});});
+    Object.keys(ym).sort().forEach(function(y){rows.push(row([y,ym[y]]));});
+  }
+
+  else if(key==='status'){
+    filename='RanchBook_HerdStatus_'+dateStr+'.csv';
+    rows.push(row(['Tag #','Type','Breed','Status','DOB','Age']));
+    A.sort(function(a,b){return (a.status||'').localeCompare(b.status||'');}).forEach(function(a){
+      var br=a.type==='calf'?(resolveCalfBreed(a).short||a.breed||''):(a.breed||'');
+      rows.push(row([a.tag||'',a.type||'',br,a.status||'active',a.dob||'',calcAge(a.dob)||a.age||'']));
+    });
+  }
+
+  else if(key==='weight'){
+    filename='RanchBook_WeightSummary_'+dateStr+'.csv';
+    rows.push(row(['Tag #','Type','Breed','Weight (lbs)','Body Condition Score','DOB','Age']));
+    A.filter(function(a){return a.weight&&parseFloat(a.weight)>0;})
+      .sort(function(a,b){return parseFloat(b.weight)-parseFloat(a.weight);})
+      .forEach(function(a){
+        var br=a.type==='calf'?(resolveCalfBreed(a).short||a.breed||''):(a.breed||'');
+        rows.push(row([a.tag||'',a.type||'',br,a.weight||'',a.bcs||'',a.dob||'',calcAge(a.dob)||a.age||'']));
+      });
+    rows.push('');
+    rows.push(row(['Group','Count','Avg Weight','Min Weight','Max Weight']));
+    ['cow','bull','calf'].forEach(function(t){
+      var grp=A.filter(function(a){return a.type===t&&a.weight&&parseFloat(a.weight)>0;}).map(function(a){return parseFloat(a.weight);});
+      if(grp.length){
+        var avg=Math.round(grp.reduce(function(s,w){return s+w;},0)/grp.length);
+        rows.push(row([t+'s',grp.length,avg+' lbs',Math.min.apply(null,grp)+' lbs',Math.max.apply(null,grp)+' lbs']));
+      }
+    });
+  }
+
+  if(!rows.length){rows.push('No data available for this section.');}
+
+  var blob=new Blob([rows.join('\n')],{type:'text/csv'});
+  var url=URL.createObjectURL(blob);
+  var dlLink=document.createElement('a');
+  dlLink.href=url;
+  dlLink.download=filename;
+  document.body.appendChild(dlLink);
+  dlLink.click();
+  document.body.removeChild(dlLink);
+  URL.revokeObjectURL(url);
 }
 </script>
 </body>
