@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -150,7 +151,7 @@ body{font-family:Georgia,serif;background:#F5ECD7;color:#2C1A0E;min-height:100vh
 .fl:first-child{margin-top:0;}
 .fi{display:block;width:100%;padding:12px 13px;font-size:16px;font-family:Georgia,serif;border:1px solid #C9A96E;border-radius:7px;background:white;color:#2C1A0E;-webkit-appearance:none;appearance:none;}
 textarea.fi{min-height:88px;resize:vertical;}
-select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238C7A60' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+select.fi{background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘12’ height=‘8’ viewBox=‘0 0 12 8’%3E%3Cpath d=‘M1 1l5 5 5-5’ stroke=’%238C7A60’ stroke-width=‘1.5’ fill=‘none’ stroke-linecap=‘round’/%3E%3C/svg%3E”);background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .form-footer{position:fixed;bottom:0;left:0;right:0;padding:11px 15px;background:#F0E4C8;border-top:1px solid #C9A96E;display:flex;gap:10px;z-index:100;}
 .save-btn{flex:1;padding:14px;background:#A0440A;color:white;border:none;border-radius:8px;font-size:0.95rem;font-family:Georgia,serif;cursor:pointer;}
@@ -164,12 +165,14 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 /* Chart tooltip */
 #chartTip{position:fixed;background:#2C1A0E;color:#F5ECD7;padding:7px 13px;border-radius:8px;font-size:0.78rem;font-family:Georgia,serif;pointer-events:none;z-index:999;display:none;max-width:180px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,0.35);line-height:1.4;}
 </style>
+
 </head>
 <body>
 
 <div id="chartTip"></div>
 
 <!-- LIST -->
+
 <div class="page on" id="pgList">
   <div class="topbar"><h1>🐂 Ranch Book</h1><button class="back-btn" onclick="goReports()" style="background:rgba(255,255,255,0.15);font-size:0.8rem;padding:7px 12px;">📊 Reports</button></div>
   <div class="stats-bar">
@@ -316,6 +319,7 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 </div>
 
 <!-- PROFILE -->
+
 <div class="page" id="pgProf">
   <div class="topbar">
     <button class="back-btn" onclick="goList()">‹ Back</button>
@@ -325,6 +329,7 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 </div>
 
 <!-- FORM -->
+
 <div class="page" id="pgForm">
   <div class="topbar">
     <button class="back-btn" onclick="goBack()">‹ Back</button>
@@ -332,157 +337,159 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
   </div>
   <div class="form-page">
 
-    <div class="fsec">
-      <span class="fsec-label">Animal Type</span>
-      <div class="type-row">
-        <button class="tybtn tycow" id="tbC" onclick="setType('cow')"><span class="ti" id="tiCow"></span>Cow</button>
-        <button class="tybtn" id="tbB" onclick="setType('bull')"><span class="ti" id="tiBull"></span>Bull</button>
-        <button class="tybtn" id="tbK" onclick="setType('calf')"><span class="ti" id="tiCalf"></span>Calf</button>
-      </div>
-      <input type="hidden" id="fType" value="cow">
-    </div>
+```
+<div class="fsec">
+  <span class="fsec-label">Animal Type</span>
+  <div class="type-row">
+    <button class="tybtn tycow" id="tbC" onclick="setType('cow')"><span class="ti" id="tiCow"></span>Cow</button>
+    <button class="tybtn" id="tbB" onclick="setType('bull')"><span class="ti" id="tiBull"></span>Bull</button>
+    <button class="tybtn" id="tbK" onclick="setType('calf')"><span class="ti" id="tiCalf"></span>Calf</button>
+  </div>
+  <input type="hidden" id="fType" value="cow">
+</div>
 
-    <div class="fsec">
-      <span class="fsec-label">Identity</span>
-      <label class="fl">Tag / Ear # ★ Primary ID</label>
-      <input class="fi" type="text" id="fTag2" placeholder="e.g. #4472" autocomplete="off">
-      <div id="fBreedWrap">
-      <label class="fl">Breed</label>
-      <select class="fi" id="fBreed" onchange="onCowBreedChange()">
-        <option value="">— Select Breed —</option>
-        <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
-        <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
-        <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
-        <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
-        <option value="Crossbred">Crossbred / Mixed ▼ specify below</option>
-        <option value="Other">Other</option>
-      </select>
-      <!-- Shown only when Crossbred is selected -->
-      <div id="fCowCrossWrap" class="hidden">
-        <div style="background:#F0E8F8;border:1px solid #B48ACC;border-radius:8px;padding:12px;margin-top:10px;">
-          <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:#5A2080;margin-bottom:10px;font-weight:bold;">Specify Cross Parentage</div>
-          <div class="two">
-            <div>
-              <label class="fl" style="color:#5A2080;">Her Sire (Father) Breed</label>
-              <select class="fi" id="fCowSireBreed" onchange="updateCowCrossLabel()">
-                <option value="">— Unknown —</option>
-                <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
-                <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
-                <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
-                <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label class="fl" style="color:#5A2080;">Her Dam (Mother) Breed</label>
-              <select class="fi" id="fCowDamBreed" onchange="updateCowCrossLabel()">
-                <option value="">— Unknown —</option>
-                <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
-                <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
-                <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
-                <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-          </div>
-          <div id="fCowCrossPreview" style="margin-top:8px;display:none;background:white;border:1px solid #B48ACC;border-radius:6px;padding:8px 12px;font-size:0.85rem;color:#5A2080;text-align:center;font-weight:bold;"></div>
-        </div>
-      </div>
-      </div>
-      <label class="fl">Color / Markings</label>
-      <input class="fi" type="text" id="fColor" placeholder="e.g. Black with white face" autocomplete="off">
-    </div>
-
-    <div class="fsec">
-      <span class="fsec-label">Age &amp; Dates</span>
+<div class="fsec">
+  <span class="fsec-label">Identity</span>
+  <label class="fl">Tag / Ear # ★ Primary ID</label>
+  <input class="fi" type="text" id="fTag2" placeholder="e.g. #4472" autocomplete="off">
+  <div id="fBreedWrap">
+  <label class="fl">Breed</label>
+  <select class="fi" id="fBreed" onchange="onCowBreedChange()">
+    <option value="">— Select Breed —</option>
+    <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
+    <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
+    <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
+    <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
+    <option value="Crossbred">Crossbred / Mixed ▼ specify below</option>
+    <option value="Other">Other</option>
+  </select>
+  <!-- Shown only when Crossbred is selected -->
+  <div id="fCowCrossWrap" class="hidden">
+    <div style="background:#F0E8F8;border:1px solid #B48ACC;border-radius:8px;padding:12px;margin-top:10px;">
+      <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:#5A2080;margin-bottom:10px;font-weight:bold;">Specify Cross Parentage</div>
       <div class="two">
-        <div><label class="fl">Date of Birth</label><input class="fi" type="date" id="fDob"></div>
-        <div><label class="fl">Age (if no DOB)</label><input class="fi" type="text" id="fAge" placeholder="e.g. 3 years" autocomplete="off"></div>
-      </div>
-      <div class="two">
-        <div><label class="fl">Acquired Date</label><input class="fi" type="date" id="fAcq"></div>
-        <div><label class="fl">Status</label>
-          <select class="fi" id="fStat" onchange="onStatusChange()">
-            <option value="active">Active / In Herd</option>
-            <option value="breeding">Breeding Stock</option>
-            <option value="sold">Sold</option>
-            <option value="deceased">Deceased</option>
-          </select>
-        </div>
-      </div>
-      <div id="fSoldReasonWrap" class="hidden">
-        <label class="fl">Sold To / Reason for Sale</label>
-        <input class="fi" type="text" id="fSoldReason" placeholder="e.g. John Smith Ranch, sold at auction…" autocomplete="off">
-        <label class="fl">Sale Date</label>
-        <input class="fi" type="date" id="fSoldDate">
-      </div>
-    </div>
-
-    <!-- Pregnancy: cows only -->
-    <div class="fsec" id="fPregSec">
-      <span class="fsec-label">Pregnancy Status</span>
-      <div class="preg-row">
-        <button class="preg-btn" id="pbOpen" onclick="setPreg('open')"><span class="pi">🔵</span>Open</button>
-        <button class="preg-btn preg-pregnant" id="pbPreg" onclick="setPreg('pregnant')"><span class="pi">🟢</span>Pregnant</button>
-        <button class="preg-btn preg-unk" id="pbUnk" onclick="setPreg('unknown')"><span class="pi">⚪</span>Unknown</button>
-      </div>
-      <input type="hidden" id="fPreg" value="unknown">
-      <div id="fCalvingWrap" class="hidden">
-        <label class="fl">Expected Calving Date</label>
-        <input class="fi" type="date" id="fCalving">
-      </div>
-    </div>
-
-    <div class="fsec">
-      <span class="fsec-label">Physical Details</span>
-      <div class="two">
-        <div><label class="fl">Weight (lbs)</label><input class="fi" type="number" id="fWt" placeholder="1200" inputmode="numeric"></div>
-        <div><label class="fl">Body Condition (1–9)</label><input class="fi" type="number" id="fBCS" min="1" max="9" placeholder="5" inputmode="numeric"></div>
-      </div>
-    </div>
-
-    <div class="fsec">
-      <span class="fsec-label">Parentage</span>
-      <div class="two">
-        <div><label class="fl">Sire (Father) Tag #</label><input class="fi" type="text" id="fSire" placeholder="e.g. #1012" autocomplete="off"></div>
-        <div><label class="fl">Sire Breed</label>
-          <select class="fi" id="fSireBreed" onchange="updateCrossLabel()">
+        <div>
+          <label class="fl" style="color:#5A2080;">Her Sire (Father) Breed</label>
+          <select class="fi" id="fCowSireBreed" onchange="updateCowCrossLabel()">
             <option value="">— Unknown —</option>
             <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
             <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
             <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
             <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
-            <option value="Crossbred">Crossbred</option><option value="Other">Other</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="fl" style="color:#5A2080;">Her Dam (Mother) Breed</label>
+          <select class="fi" id="fCowDamBreed" onchange="updateCowCrossLabel()">
+            <option value="">— Unknown —</option>
+            <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
+            <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
+            <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
+            <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
+            <option value="Other">Other</option>
           </select>
         </div>
       </div>
-
-      <label class="fl">Dam (Mother)</label>
-      <div id="damFieldWrap"></div>
-      <div id="crossLabelPreview" class="cross-label-preview"></div>
+      <div id="fCowCrossPreview" style="margin-top:8px;display:none;background:white;border:1px solid #B48ACC;border-radius:6px;padding:8px 12px;font-size:0.85rem;color:#5A2080;text-align:center;font-weight:bold;"></div>
     </div>
+  </div>
+  </div>
+  <label class="fl">Color / Markings</label>
+  <input class="fi" type="text" id="fColor" placeholder="e.g. Black with white face" autocomplete="off">
+</div>
 
-    <!-- Sex: calves only -->
-    <div class="fsec hidden" id="fSexSec">
-      <span class="fsec-label">Sex of Calf</span>
-      <select class="fi" id="fSex">
-        <option value="heifer">♀ Heifer (Female)</option>
-        <option value="bull-calf">♂ Bull Calf (Male)</option>
-        <option value="steer">♂ Steer (Castrated)</option>
+<div class="fsec">
+  <span class="fsec-label">Age &amp; Dates</span>
+  <div class="two">
+    <div><label class="fl">Date of Birth</label><input class="fi" type="date" id="fDob"></div>
+    <div><label class="fl">Age (if no DOB)</label><input class="fi" type="text" id="fAge" placeholder="e.g. 3 years" autocomplete="off"></div>
+  </div>
+  <div class="two">
+    <div><label class="fl">Acquired Date</label><input class="fi" type="date" id="fAcq"></div>
+    <div><label class="fl">Status</label>
+      <select class="fi" id="fStat" onchange="onStatusChange()">
+        <option value="active">Active / In Herd</option>
+        <option value="breeding">Breeding Stock</option>
+        <option value="sold">Sold</option>
+        <option value="deceased">Deceased</option>
       </select>
     </div>
+  </div>
+  <div id="fSoldReasonWrap" class="hidden">
+    <label class="fl">Sold To / Reason for Sale</label>
+    <input class="fi" type="text" id="fSoldReason" placeholder="e.g. John Smith Ranch, sold at auction…" autocomplete="off">
+    <label class="fl">Sale Date</label>
+    <input class="fi" type="date" id="fSoldDate">
+  </div>
+</div>
 
-    <!-- Calves: cows only -->
-    <div class="fsec hidden" id="fCalSec">
-      <span class="fsec-label">Calves Born</span>
-      <div id="fCalList"></div>
-      <button class="add-calf-link-btn" onclick="addCalfRow()">+ Add Calf Record</button>
-    </div>
+<!-- Pregnancy: cows only -->
+<div class="fsec" id="fPregSec">
+  <span class="fsec-label">Pregnancy Status</span>
+  <div class="preg-row">
+    <button class="preg-btn" id="pbOpen" onclick="setPreg('open')"><span class="pi">🔵</span>Open</button>
+    <button class="preg-btn preg-pregnant" id="pbPreg" onclick="setPreg('pregnant')"><span class="pi">🟢</span>Pregnant</button>
+    <button class="preg-btn preg-unk" id="pbUnk" onclick="setPreg('unknown')"><span class="pi">⚪</span>Unknown</button>
+  </div>
+  <input type="hidden" id="fPreg" value="unknown">
+  <div id="fCalvingWrap" class="hidden">
+    <label class="fl">Expected Calving Date</label>
+    <input class="fi" type="date" id="fCalving">
+  </div>
+</div>
 
-    <div class="fsec">
-      <span class="fsec-label">Notes</span>
-      <textarea class="fi" id="fNotes" placeholder="Health history, vaccinations, temperament, breeding notes…"></textarea>
+<div class="fsec">
+  <span class="fsec-label">Physical Details</span>
+  <div class="two">
+    <div><label class="fl">Weight (lbs)</label><input class="fi" type="number" id="fWt" placeholder="1200" inputmode="numeric"></div>
+    <div><label class="fl">Body Condition (1–9)</label><input class="fi" type="number" id="fBCS" min="1" max="9" placeholder="5" inputmode="numeric"></div>
+  </div>
+</div>
+
+<div class="fsec">
+  <span class="fsec-label">Parentage</span>
+  <div class="two">
+    <div><label class="fl">Sire (Father) Tag #</label><input class="fi" type="text" id="fSire" placeholder="e.g. #1012" autocomplete="off"></div>
+    <div><label class="fl">Sire Breed</label>
+      <select class="fi" id="fSireBreed" onchange="updateCrossLabel()">
+        <option value="">— Unknown —</option>
+        <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
+        <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
+        <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
+        <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
+        <option value="Crossbred">Crossbred</option><option value="Other">Other</option>
+      </select>
     </div>
+  </div>
+
+  <label class="fl">Dam (Mother)</label>
+  <div id="damFieldWrap"></div>
+  <div id="crossLabelPreview" class="cross-label-preview"></div>
+</div>
+
+<!-- Sex: calves only -->
+<div class="fsec hidden" id="fSexSec">
+  <span class="fsec-label">Sex of Calf</span>
+  <select class="fi" id="fSex">
+    <option value="heifer">♀ Heifer (Female)</option>
+    <option value="bull-calf">♂ Bull Calf (Male)</option>
+    <option value="steer">♂ Steer (Castrated)</option>
+  </select>
+</div>
+
+<!-- Calves: cows only -->
+<div class="fsec hidden" id="fCalSec">
+  <span class="fsec-label">Calves Born</span>
+  <div id="fCalList"></div>
+  <button class="add-calf-link-btn" onclick="addCalfRow()">+ Add Calf Record</button>
+</div>
+
+<div class="fsec">
+  <span class="fsec-label">Notes</span>
+  <textarea class="fi" id="fNotes" placeholder="Health history, vaccinations, temperament, breeding notes…"></textarea>
+</div>
+```
 
   </div>
   <div class="form-footer">
@@ -492,6 +499,7 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 </div>
 
 <!-- CALF DETAIL MODAL (slides up from bottom) -->
+
 <div class="modal-overlay" id="calfModal" onclick="handleModalTap(event)">
   <div class="calf-modal" id="calfModalBox">
     <div class="cm-handle"></div>
@@ -508,6 +516,7 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 </div>
 
 <!-- REPORTS PAGE -->
+
 <div class="page" id="pgReports">
   <div class="topbar">
     <button class="back-btn" onclick="goList()">‹ Back</button>
@@ -849,7 +858,12 @@ function goProf(id){
         '<div class="drow"><span class="dk">Mark Sold</span><span class="dv"><button onclick="markAsSold(\''+a.id+'\')" style="padding:5px 14px;background:none;border:1px solid #C9A96E;color:#7B4A00;border-radius:14px;font-family:Georgia,serif;font-size:0.72rem;cursor:pointer;">$ Mark as Sold</button></span></div>'
       :'')+
       (a.status==='sold'&&a.soldReason?dr('Sold To / Reason',a.soldReason):'')+
-      (a.status==='sold'&&a.soldDate?dr('Sale Date',fmtDate(a.soldDate)):'')+
+      (a.status==='sold'?
+        '<div class="drow"><span class="dk">Sale Date</span><span class="dv" style="display:flex;align-items:center;gap:6px;justify-content:flex-end;">'+
+          (a.soldDate?'<span style="font-size:0.82rem;color:#2C1A0E;">'+fmtDate(a.soldDate)+'</span>':'')+
+          '<input type="date" id="soldDateInput_'+a.id+'" value="'+(a.soldDate||'')+'" style="padding:5px 8px;font-size:14px;font-family:Georgia,serif;border:1px solid #C9A96E;border-radius:6px;background:white;color:#2C1A0E;-webkit-appearance:none;" onchange="saveSoldDate(\''+a.id+'\')">'+
+        '</span></div>'
+      :'')+
     '</div>'+
     '<div class="card"><h3>Physical</h3>'+dr('Weight',a.weight?a.weight+' lbs':null)+dr('Body Condition',a.bcs)+'</div>'+
     '<div class="card"><h3>Parentage</h3>'+sireHtml+(a.sireBreed&&!a.sire?dr('Sire Breed',a.sireBreed):'')+damHtml+'</div>'+
@@ -1050,22 +1064,56 @@ function onStatusChange(){
 function markAsSold(id){
   var a=A.find(function(x){return x.id===id;});
   if(!a)return;
-  var reason=prompt('Sold to / Reason for sale (optional):','');
-  if(reason===null)return; // cancelled
-  var dateVal=new Date().toISOString().substr(0,10);
+  // Show inline sold form instead of prompt() — prompt is blocked on iOS PWA/GitHub Pages
+  var existing=document.getElementById('soldForm_'+id);
+  if(existing){existing.remove();return;}
+  var form=document.createElement('div');
+  form.id='soldForm_'+id;
+  form.style.cssText='background:#FDF0D0;border:1px solid #D4A84B;border-radius:8px;padding:12px;margin-top:8px;';
+  form.innerHTML=
+    '<div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:#7B4A00;margin-bottom:8px;font-weight:bold;">Confirm Sale</div>'+
+    '<input id="soldReasonInp_'+id+'" type="text" placeholder="Sold to / reason (optional)" style="display:block;width:100%;padding:10px 12px;font-size:16px;font-family:Georgia,serif;border:1px solid #C9A96E;border-radius:7px;background:white;color:#2C1A0E;margin-bottom:8px;box-sizing:border-box;">'+
+    '<input id="soldDateInp_'+id+'" type="date" value="'+new Date().toISOString().substr(0,10)+'" style="display:block;width:100%;padding:10px 12px;font-size:16px;font-family:Georgia,serif;border:1px solid #C9A96E;border-radius:7px;background:white;color:#2C1A0E;margin-bottom:8px;box-sizing:border-box;-webkit-appearance:none;">'+
+    '<div style="display:flex;gap:8px;">'+
+      '<button onclick="confirmSold(\''+id+'\')" style="flex:1;padding:11px;background:#A0440A;color:white;border:none;border-radius:7px;font-family:Georgia,serif;font-size:0.9rem;cursor:pointer;">✓ Mark as Sold</button>'+
+      '<button onclick="document.getElementById(\'soldForm_'+id+'\').remove()" style="padding:11px 16px;background:none;border:1px solid #C9A96E;color:#8C7A60;border-radius:7px;font-family:Georgia,serif;font-size:0.9rem;cursor:pointer;">Cancel</button>'+
+    '</div>';
+  // Insert after the Mark Sold button row
+  var btn=document.querySelector('[onclick*="markAsSold(\''+id+'\'"]');
+  if(btn){btn.closest('.drow').after(form);}
+  else{document.getElementById('pBody').appendChild(form);}
+  document.getElementById('soldReasonInp_'+id).focus();
+}
+
+function confirmSold(id){
+  var a=A.find(function(x){return x.id===id;});
+  if(!a)return;
+  var reasonEl=document.getElementById('soldReasonInp_'+id);
+  var dateEl=document.getElementById('soldDateInp_'+id);
   a.status='sold';
-  a.soldReason=reason||null;
-  a.soldDate=dateVal;
+  a.soldReason=reasonEl?reasonEl.value.trim()||null:null;
+  a.soldDate=dateEl?dateEl.value:new Date().toISOString().substr(0,10);
   if(a.type==='cow'){a.pregnancyStatus='open';a.expectedCalving=null;}
+  sv();
+  goProf(id);
+}
+
+function saveSoldDate(id){
+  var a=A.find(function(x){return x.id===id;});
+  if(!a)return;
+  var inp=document.getElementById('soldDateInput_'+id);
+  if(inp){a.soldDate=inp.value||null;}
   sv();
   goProf(id);
 }
 
 function quickSetPreg(id,status){
   var a=A.find(function(x){return x.id===id;});
+  if(!a)return;
+  a.pregnancyStatus=status;
   if(status!=='pregnant')a.expectedCalving=null;
   sv();
-  goProf(id); // re-render profile
+  goProf(id);
 }
 
 function saveCalvingDate(id){
@@ -1863,10 +1911,49 @@ function renderReports(){
       '</div>'
     :'');
 
+  // COW AGE BREAKDOWN
+  var cowAgeMap={};
+  var cowsWithDob=cows.filter(function(c){return c.dob&&c.status!=='sold';});
+  cowsWithDob.forEach(function(c){
+    var d=new Date(c.dob+'T00:00:00');
+    var yrs=Math.floor(((new Date())-d)/(365.25*24*60*60*1000));
+    var key=yrs===0?'< 1 yr':yrs===1?'1 yr':yrs===2?'2 yr':yrs===3?'3 yr':yrs===4?'4 yr':yrs===5?'5 yr':yrs<=7?'6–7 yr':yrs<=10?'8–10 yr':'10+ yr';
+    if(!cowAgeMap[key])cowAgeMap[key]={count:0,yrs:yrs};
+    cowAgeMap[key].count++;
+  });
+  var cowAgeOrder=['< 1 yr','1 yr','2 yr','3 yr','4 yr','5 yr','6–7 yr','8–10 yr','10+ yr'];
+  var cowAgeItems=cowAgeOrder.filter(function(k){return cowAgeMap[k];}).map(function(k,i){
+    return{l:k,key:k,v:cowAgeMap[k].count,c:C[i%C.length]};
+  });
+  var cowAgeMax=cowAgeItems.length?Math.max.apply(null,cowAgeItems.map(function(x){return x.v;})):1;
+  var cowAgeHtml=cowAgeItems.length?
+    cowAgeItems.map(function(item){
+      var pct=Math.round(item.v/cowAgeMax*100);
+      var ofTotal=cows.filter(function(c){return c.status!=='sold';}).length;
+      var ofPct=ofTotal?Math.round(item.v/ofTotal*100):0;
+      return '<div style="margin-bottom:12px;" onmouseenter="showTip(event,\''+item.l+': '+item.v+' cows ('+ofPct+'% of active herd)\')" onmousemove="moveTip(event)" onmouseleave="hideTip()">'+
+        '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">'+
+          '<span style="font-size:0.82rem;font-weight:bold;color:#2C1A0E;">'+item.l+'</span>'+
+          '<span style="font-size:0.82rem;color:#8C7A60;font-weight:bold;">'+item.v+' <span style="color:#A0440A;font-size:0.75rem;">'+ofPct+'%</span></span>'+
+        '</div>'+
+        '<div style="background:#EDD89A;border-radius:5px;height:22px;overflow:hidden;">'+
+          '<div style="background:'+item.c+';height:100%;width:'+pct+'%;border-radius:5px;display:flex;align-items:center;">'+
+            (pct>15?'<span style="padding-left:8px;font-size:0.68rem;color:white;font-weight:bold;">'+item.v+'</span>':'')+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    }).join('')+
+    sRow('Active cows with DOB recorded',cowsWithDob.length)+
+    (cows.filter(function(c){return !c.dob&&c.status!=='sold';}).length?
+      '<div style="font-size:0.7rem;color:#8C7A60;margin-top:6px;font-style:italic;">'+cows.filter(function(c){return !c.dob&&c.status!=='sold';}).length+' cows without a recorded DOB are excluded.</div>'
+    :'')
+  : '<p style="color:#8C7A60;font-style:italic;font-size:0.85rem;">No cows with recorded date of birth yet.</p>';
+
   document.getElementById('reportBody').innerHTML=
     rCard('🐄 Herd Overview',ov,'overview')+
     rCard('🟢 Pregnancy Status',pr,'pregnancy')+
     rCard('📅 Upcoming Calvings',upHtml,'calvings')+
+    rCard('📊 Cow Age Breakdown',cowAgeHtml,'cow_ages')+
     rCard('🛒 Calf Buyer Summary',buyerContent,'buyer')+
     rCard('🐮 Calves by Age',age,'calves_age')+
     rCard('🧬 Breed Breakdown — % of Herd',breedTabs,'breeds')+
@@ -2142,7 +2229,20 @@ function exportSection(key){
     });
   }
 
-  else if(key==='weight'){
+  else if(key==='cow_ages'){
+    filename='RanchBook_CowAges_'+dateStr+'.csv';
+    rows.push(row(['Age Group','Count','% of Active Herd']));
+    var activeCows=A.filter(function(a){return a.type==='cow'&&a.status!=='sold'&&a.dob;});
+    var ageGrp={};
+    activeCows.forEach(function(c){
+      var yrs=Math.floor((new Date()-new Date(c.dob+'T00:00:00'))/(365.25*24*60*60*1000));
+      var k=yrs===0?'< 1 yr':yrs===1?'1 yr':yrs===2?'2 yr':yrs===3?'3 yr':yrs===4?'4 yr':yrs===5?'5 yr':yrs<=7?'6-7 yr':yrs<=10?'8-10 yr':'10+ yr';
+      ageGrp[k]=(ageGrp[k]||0)+1;
+    });
+    ['< 1 yr','1 yr','2 yr','3 yr','4 yr','5 yr','6-7 yr','8-10 yr','10+ yr'].forEach(function(k){
+      if(ageGrp[k]) rows.push(row([k,ageGrp[k],Math.round(ageGrp[k]/activeCows.length*100)+'%']));
+    });
+  }
     filename='RanchBook_WeightSummary_'+dateStr+'.csv';
     rows.push(row(['Tag #','Type','Breed','Weight (lbs)','Body Condition Score','DOB','Age']));
     A.filter(function(a){return a.weight&&parseFloat(a.weight)>0;})
@@ -2160,7 +2260,6 @@ function exportSection(key){
         rows.push(row([t+'s',grp.length,avg+' lbs',Math.min.apply(null,grp)+' lbs',Math.max.apply(null,grp)+' lbs']));
       }
     });
-  }
 
   if(!rows.length){rows.push('No data available for this section.');}
 
@@ -2218,14 +2317,19 @@ function exportSectionPdf(key){
       'svg{display:block;margin:8px auto;}'+
       '@media print{body{margin:16px;} button{display:none!important;}}'+
     '</style></head><body>'+
-    '<h1>🐂 Ranch Book — '+title+'</h1>'+
-    '<p class="meta">Generated '+dateStr+' &nbsp;·&nbsp; '+A.length+' animals on record</p>'+
-    cardHtml+
-    '<script>window.onload=function(){window.print();}<\/script>'+
-    '</body></html>'
-  );
-  win.document.close();
+
+```
+'<h1>🐂 Ranch Book — '+title+'</h1>'+
+'<p class="meta">Generated '+dateStr+' &nbsp;·&nbsp; '+A.length+' animals on record</p>'+
+cardHtml+
+'<script>window.onload=function(){window.print();}<\/script>'+
+'</body></html>'
+```
+
+);
+win.document.close();
 }
 </script>
+
 </body>
 </html>
