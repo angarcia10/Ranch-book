@@ -156,6 +156,11 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 .save-btn{flex:1;padding:14px;background:#A0440A;color:white;border:none;border-radius:8px;font-size:0.95rem;font-family:Georgia,serif;cursor:pointer;}
 .cancel-btn{padding:14px 18px;background:none;border:1px solid #C9A96E;color:#8C7A60;border-radius:8px;font-size:0.95rem;font-family:Georgia,serif;cursor:pointer;}
 .hidden{display:none!important;}
+/* Batch select checkbox in list rows */
+.row-cb{width:22px;height:22px;border:2px solid #C9A96E;border-radius:5px;display:none;align-items:center;justify-content:center;background:white;flex-shrink:0;font-size:13px;color:white;}
+.select-mode .row-cb{display:flex;}
+.row-cb.checked{background:#A0440A;border-color:#A0440A;}
+.select-mode .animal-row.selected{background:#FDF0D0;}
 /* Chart tooltip */
 #chartTip{position:fixed;background:#2C1A0E;color:#F5ECD7;padding:7px 13px;border-radius:8px;font-size:0.78rem;font-family:Georgia,serif;pointer-events:none;z-index:999;display:none;max-width:180px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,0.35);line-height:1.4;}
 </style>
@@ -174,7 +179,67 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
     <div class="stat"><span class="n" id="stT">0</span><span class="l">Total</span></div>
     <div class="stat"><span class="n" id="stS" style="color:#E8856A;">0</span><span class="l" style="color:#E8856A;">Sold</span></div>
   </div>
-  <div class="add-wrap"><button class="add-btn" onclick="goAdd()">＋ Add Animal</button></div>
+  <div class="add-wrap" style="display:grid;grid-template-columns:1fr auto;gap:8px;">
+    <button class="add-btn" onclick="toggleQuickAdd()">⚡ Quick Add Calf</button>
+    <button class="add-btn" onclick="goAdd()" style="background:#F5ECD7;color:#A0440A;border:2px solid #A0440A;white-space:nowrap;padding:14px 12px;font-size:0.85rem;">＋ Full Form</button>
+  </div>
+  <!-- QUICK ADD PANEL -->
+  <div id="quickAddPanel" style="display:none;background:#FDF6E8;border-bottom:2px solid #C9A96E;">
+    <div style="background:#A0440A;color:#F5ECD7;padding:9px 14px;font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;">
+      <span>⚡ Quick Add Calf</span>
+      <button onclick="toggleQuickAdd()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:4px;padding:3px 9px;cursor:pointer;font-size:0.8rem;">✕</button>
+    </div>
+    <div style="padding:12px 14px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <div>
+          <label class="fl" style="margin-top:0;">Calf Tag #</label>
+          <input class="fi" type="text" id="qaTag" placeholder="e.g. #55" autocomplete="off">
+        </div>
+        <div>
+          <label class="fl" style="margin-top:0;">Sex</label>
+          <select class="fi" id="qaSex">
+            <option value="heifer">♀ Heifer</option>
+            <option value="bull-calf">♂ Bull Calf</option>
+            <option value="steer">♂ Steer</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <div>
+          <label class="fl">Dam (Mother)</label>
+          <select class="fi" id="qaDam" onchange="updateQaBreed()">
+            <option value="">— Select Cow —</option>
+          </select>
+        </div>
+        <div>
+          <label class="fl">Calving Date</label>
+          <input class="fi" type="date" id="qaDate">
+        </div>
+      </div>
+      <div style="margin-bottom:8px;">
+        <label class="fl">Sire Breed</label>
+        <select class="fi" id="qaSireBreed" onchange="updateQaBreed()">
+          <option value="">— Unknown —</option>
+        </select>
+      </div>
+      <div id="qaBreedPreview" style="display:none;background:#F0E8F8;border:1px solid #B48ACC;border-radius:7px;padding:8px 12px;font-size:0.82rem;color:#5A2080;margin-bottom:8px;text-align:center;font-weight:bold;"></div>
+      <button onclick="saveQuickAdd()" style="display:block;width:100%;padding:13px;background:#A0440A;color:white;border:none;border-radius:8px;font-size:0.95rem;font-family:Georgia,serif;cursor:pointer;">Save Calf</button>
+    </div>
+  </div>
+  <!-- BATCH BAR -->
+  <div id="batchBar" style="display:none;background:#FDF0D0;border-bottom:1px solid #D4A84B;padding:8px 14px;align-items:center;gap:6px;">
+    <span id="batchCount" style="font-size:0.78rem;font-weight:bold;color:#7B4A00;flex:1;"></span>
+    <select id="batchStatusSel" style="padding:6px 10px;font-size:0.75rem;font-family:Georgia,serif;border:1px solid #C9A96E;border-radius:6px;background:white;color:#2C1A0E;">
+      <option value="">Set status…</option>
+      <option value="active">Active</option>
+      <option value="breeding">Breeding Stock</option>
+      <option value="sold">Sold</option>
+      <option value="deceased">Deceased</option>
+    </select>
+    <button onclick="batchApplyStatus()" style="padding:6px 10px;background:#A0440A;color:white;border:none;border-radius:6px;font-size:0.75rem;font-family:Georgia,serif;cursor:pointer;">Apply</button>
+    <button onclick="batchDelete()" style="padding:6px 10px;background:none;border:1px solid #C0392B;color:#C0392B;border-radius:6px;font-size:0.75rem;font-family:Georgia,serif;cursor:pointer;">Delete</button>
+    <button onclick="clearBatch()" style="background:none;border:none;color:#8C7A60;font-size:1.1rem;cursor:pointer;padding:0 4px;">✕</button>
+  </div>
   <div class="tabs">
     <button class="tab-btn on" onclick="setTF('all',this)">All</button>
     <button class="tab-btn" onclick="setTF('cow',this)">Cows</button>
@@ -241,6 +306,12 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
   </div>
   <div class="active-filters" id="activeFiltersBar"></div>
   <div class="search-bar"><input type="search" id="sq" placeholder="Search tag #, breed…" oninput="rl()" autocomplete="off" autocorrect="off" autocapitalize="off"></div>
+  <div id="selectAllRow" style="display:none;background:#F5EAD0;border-bottom:1px solid #C9A96E;padding:7px 14px;align-items:center;gap:8px;">
+    <div id="selectAllBox" onclick="toggleSelectAll()" style="width:20px;height:20px;border:2px solid #C9A96E;border-radius:4px;display:flex;align-items:center;justify-content:center;background:white;cursor:pointer;flex-shrink:0;font-size:12px;"></div>
+    <span onclick="toggleSelectAll()" style="font-size:0.72rem;color:#7B4A00;cursor:pointer;">Select all visible</span>
+    <span style="flex:1;"></span>
+    <button onclick="exitSelectMode()" style="background:none;border:none;color:#8C7A60;font-size:0.72rem;cursor:pointer;font-family:Georgia,serif;">Cancel</button>
+  </div>
   <div id="aList"></div>
 </div>
 
@@ -642,9 +713,9 @@ function rl(){
       var bc=a.type==='cow'?'bc':a.type==='bull'?'bb':'bk';
       var isSold=a.status==='sold';
       if(isSold){
-        html+='<div class="animal-row" onclick="goProf(\''+a.id+'\')" style="background:#EDE0CC;opacity:0.55;">'+'<div class="avi" style="filter:grayscale(1);">'+emo(a.type)+'</div>'+'<div class="ainfo">'+'<div class="atag" style="text-decoration:line-through;color:#8C7A60;">'+(a.tag||'No Tag #')+'</div>'+'<div class="ameta">'+(breedDisplay||'—')+'</div>'+'</div>'+'<span class="abadge" style="background:#999;color:white;border-color:#999;">sold</span>'+'<span class="achev">›</span>'+'</div>';
+        html+='<div class="animal-row" id="ar_'+a.id+'" data-id="'+a.id+'" onclick="handleRowClick(event,\''+a.id+'\')" oncontextmenu="enterSelectMode(event,\''+a.id+'\')" style="background:#EDE0CC;opacity:0.55;">'+'<div class="row-cb" id="cb_'+a.id+'"></div>'+'<div class="avi" style="filter:grayscale(1);">'+emo(a.type)+'</div>'+'<div class="ainfo">'+'<div class="atag" style="text-decoration:line-through;color:#8C7A60;">'+(a.tag||'No Tag #')+'</div>'+'<div class="ameta">'+(breedDisplay||'—')+'</div>'+'</div>'+'<span class="abadge" style="background:#999;color:white;border-color:#999;">sold</span>'+'<span class="achev">›</span>'+'</div>';
       } else {
-        html+='<div class="animal-row" onclick="goProf(\''+a.id+'\')">'+'<div class="avi">'+emo(a.type)+'</div>'+'<div class="ainfo">'+'<div class="atag">'+(a.tag||'No Tag #')+'</div>'+'<div class="ameta">'+(meta||'—')+'</div>'+(a.expectedCalving&&ps==='pregnant'?'<div class="ameta" style="color:#6B7C5C">📅 Due: '+fmtDate(a.expectedCalving)+'</div>':'')+
+        html+='<div class="animal-row" id="ar_'+a.id+'" data-id="'+a.id+'" onclick="handleRowClick(event,\''+a.id+'\')" oncontextmenu="enterSelectMode(event,\''+a.id+'\')">'+'<div class="row-cb" id="cb_'+a.id+'"></div>'+'<div class="avi">'+emo(a.type)+'</div>'+'<div class="ainfo">'+'<div class="atag">'+(a.tag||'No Tag #')+'</div>'+'<div class="ameta">'+(meta||'—')+'</div>'+(a.expectedCalving&&ps==='pregnant'?'<div class="ameta" style="color:#6B7C5C">📅 Due: '+fmtDate(a.expectedCalving)+'</div>':'')+
           '</div>'+
           '<span class="abadge '+bc+'">'+a.type+'</span>'+
           '<span class="achev">›</span>'+
@@ -653,6 +724,8 @@ function rl(){
     });
   }
   document.getElementById('aList').innerHTML=html;
+  // Track visible IDs for batch select-all
+  _visibleIds=list.map(function(a){return a.id;});
 }
 
 // PROFILE
@@ -1264,6 +1337,174 @@ function saveAnimal(){
   }
 
   goProf(data.id);
+}
+
+// ── BATCH SELECT ──────────────────────────────────────────────────────────
+var selectedIds=new Set();
+var selectMode=false;
+var _visibleIds=[];
+
+function enterSelectMode(e,id){
+  e.preventDefault();
+  if(!selectMode){
+    selectMode=true;
+    document.getElementById('aList').classList.add('select-mode');
+    document.getElementById('selectAllRow').style.display='flex';
+    document.getElementById('batchBar').style.display='flex';
+  }
+  toggleRowSelect(id);
+  return false;
+}
+
+function handleRowClick(e,id){
+  if(selectMode){e.preventDefault();toggleRowSelect(id);return;}
+  goProf(id);
+}
+
+function toggleRowSelect(id){
+  if(selectedIds.has(id)){selectedIds.delete(id);}else{selectedIds.add(id);}
+  var cb=document.getElementById('cb_'+id);
+  var row=document.getElementById('ar_'+id);
+  if(cb){if(selectedIds.has(id)){cb.classList.add('checked');cb.textContent='✓';}else{cb.classList.remove('checked');cb.textContent='';}}
+  if(row){if(selectedIds.has(id))row.classList.add('selected');else row.classList.remove('selected');}
+  updateBatchUI();
+}
+
+function toggleSelectAll(){
+  if(selectedIds.size===_visibleIds.length){
+    _visibleIds.forEach(function(id){selectedIds.delete(id);var cb=document.getElementById('cb_'+id);var row=document.getElementById('ar_'+id);if(cb){cb.classList.remove('checked');cb.textContent='';}if(row)row.classList.remove('selected');});
+  } else {
+    _visibleIds.forEach(function(id){selectedIds.add(id);var cb=document.getElementById('cb_'+id);var row=document.getElementById('ar_'+id);if(cb){cb.classList.add('checked');cb.textContent='✓';}if(row)row.classList.add('selected');});
+  }
+  updateBatchUI();
+}
+
+function updateBatchUI(){
+  var n=selectedIds.size;
+  document.getElementById('batchCount').textContent=n+' animal'+(n!==1?'s':'')+' selected';
+  var allBox=document.getElementById('selectAllBox');
+  if(_visibleIds.length&&selectedIds.size===_visibleIds.length){
+    allBox.textContent='✓';allBox.style.background='#A0440A';allBox.style.borderColor='#A0440A';allBox.style.color='white';
+  } else {
+    allBox.textContent='';allBox.style.background='white';allBox.style.borderColor='#C9A96E';allBox.style.color='';
+  }
+}
+
+function exitSelectMode(){
+  selectMode=false;
+  selectedIds.clear();
+  var list=document.getElementById('aList');
+  if(list)list.classList.remove('select-mode');
+  document.getElementById('selectAllRow').style.display='none';
+  document.getElementById('batchBar').style.display='none';
+  rl();
+}
+
+function clearBatch(){exitSelectMode();}
+
+function batchApplyStatus(){
+  var s=document.getElementById('batchStatusSel').value;
+  if(!s){alert('Please select a status.');return;}
+  var n=selectedIds.size;
+  if(!n){alert('No animals selected.');return;}
+  if(!confirm('Set '+n+' animal'+(n!==1?'s':'')+' to "'+s+'"?'))return;
+  A.forEach(function(a){
+    if(selectedIds.has(a.id)){
+      a.status=s;
+      if(s==='sold'){
+        a.soldDate=new Date().toISOString().substr(0,10);
+        if(a.type==='cow'){a.pregnancyStatus='open';a.expectedCalving=null;}
+      }
+    }
+  });
+  sv();exitSelectMode();
+}
+
+function batchDelete(){
+  var n=selectedIds.size;
+  if(!n){alert('No animals selected.');return;}
+  if(!confirm('Permanently delete '+n+' animal'+(n!==1?'s':'')+' from Ranch Book?\nThis cannot be undone.'))return;
+  var ids=new Set(selectedIds);
+  A=A.filter(function(a){return !ids.has(a.id);});
+  A.forEach(function(a){if(a.calves)a.calves.forEach(function(c){if(ids.has(c.linkedId))c.linkedId=null;});});
+  sv();exitSelectMode();
+}
+
+// ── QUICK ADD CALF ────────────────────────────────────────────────────────
+function toggleQuickAdd(){
+  var p=document.getElementById('quickAddPanel');
+  var isOpen=p.style.display!=='none';
+  p.style.display=isOpen?'none':'block';
+  if(!isOpen)initQuickAdd();
+}
+
+function initQuickAdd(){
+  document.getElementById('qaDate').value=new Date().toISOString().substr(0,10);
+  document.getElementById('qaTag').value='';
+  document.getElementById('qaSex').value='heifer';
+  var sb=document.getElementById('qaSireBreed');
+  sb.innerHTML='<option value="">— Unknown Sire —</option>';
+  BEEF_BREEDS.forEach(function(b){sb.innerHTML+='<option value="'+b+'">'+b+'</option>';});
+  var cows=A.filter(function(a){return a.type==='cow'&&a.status!=='sold';});
+  var sd=document.getElementById('qaDam');
+  sd.innerHTML='<option value="">— Select Dam (optional) —</option>';
+  cows.forEach(function(c){
+    var lbl=(c.tag||'No Tag')+' — '+(c.crossLabel||c.breed||'Unknown');
+    sd.innerHTML+='<option value="'+c.id+'">'+lbl+'</option>';
+  });
+  document.getElementById('qaBreedPreview').style.display='none';
+}
+
+function updateQaBreed(){
+  var sb=document.getElementById('qaSireBreed').value;
+  var damId=document.getElementById('qaDam').value;
+  var dam=damId?A.find(function(a){return a.id===damId;}):null;
+  var db=dam?(dam.breed||''):'';
+  var prev=document.getElementById('qaBreedPreview');
+  if(sb&&db&&sb!==db){
+    prev.style.display='block';prev.style.color='#5A2080';
+    prev.textContent=crossLabelFull(sb,db);
+  } else if(sb){
+    prev.style.display='block';prev.style.color='#8C7A60';
+    prev.textContent=sb+' sire — select dam to compute cross';
+  } else {
+    prev.style.display='none';
+  }
+}
+
+function saveQuickAdd(){
+  var tag=document.getElementById('qaTag').value.trim();
+  if(!tag){alert('Please enter a tag #.');return;}
+  var sex=document.getElementById('qaSex').value;
+  var damId=document.getElementById('qaDam').value||null;
+  var calvDate=document.getElementById('qaDate').value;
+  var sireBreed=document.getElementById('qaSireBreed').value;
+  var dam=damId?A.find(function(a){return a.id===damId;}):null;
+  var damBreed=dam?dam.breed||'':'';
+  var cl=sireBreed&&damBreed?crossLabel(sireBreed,damBreed):null;
+  var newCalf={
+    id:uid(),type:'calf',tag:tag,
+    breed:cl||sireBreed||damBreed||'',
+    crossLabel:cl||null,
+    sireBreed:sireBreed,damBreed:damBreed,
+    dob:calvDate,sex:sex,
+    dam:dam?dam.tag||'':'',damId:damId,
+    status:'active',color:'',age:'',acquired:'',weight:'',bcs:'',notes:'',
+    sire:'',cowSireBreed:null,cowDamBreed:null,calves:[]
+  };
+  A.push(newCalf);
+  if(dam){
+    if(!dam.calves)dam.calves=[];
+    dam.calves.push({tag:tag,calvingDate:calvDate,year:calvDate?calvDate.substr(0,4):'',sex:sex,sireBreed:sireBreed,damBreed:damBreed,crossLabel:cl,linkedId:newCalf.id});
+    if(dam.pregnancyStatus==='pregnant'&&dam.expectedCalving&&calvDate){
+      var diff=Math.abs(Math.round((new Date(calvDate+'T00:00:00')-new Date(dam.expectedCalving+'T00:00:00'))/86400000));
+      if(diff<=45){dam.pregnancyStatus='open';dam.expectedCalving=null;}
+    }
+  }
+  sv();
+  document.getElementById('quickAddPanel').style.display='none';
+  rl();
+  showFilterToast('✓ Calf '+tag+' saved!');
 }
 
 rl();
