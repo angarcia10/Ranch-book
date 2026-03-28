@@ -156,9 +156,13 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 .save-btn{flex:1;padding:14px;background:#A0440A;color:white;border:none;border-radius:8px;font-size:0.95rem;font-family:Georgia,serif;cursor:pointer;}
 .cancel-btn{padding:14px 18px;background:none;border:1px solid #C9A96E;color:#8C7A60;border-radius:8px;font-size:0.95rem;font-family:Georgia,serif;cursor:pointer;}
 .hidden{display:none!important;}
+/* Chart tooltip */
+#chartTip{position:fixed;background:#2C1A0E;color:#F5ECD7;padding:7px 13px;border-radius:8px;font-size:0.78rem;font-family:Georgia,serif;pointer-events:none;z-index:999;display:none;max-width:180px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,0.35);line-height:1.4;}
 </style>
 </head>
 <body>
+
+<div id="chartTip"></div>
 
 <!-- LIST -->
 <div class="page on" id="pgList">
@@ -168,6 +172,7 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
     <div class="stat"><span class="n" id="stB">0</span><span class="l">Bulls</span></div>
     <div class="stat"><span class="n" id="stK">0</span><span class="l">Calves</span></div>
     <div class="stat"><span class="n" id="stT">0</span><span class="l">Total</span></div>
+    <div class="stat"><span class="n" id="stS" style="color:#E8856A;">0</span><span class="l" style="color:#E8856A;">Sold</span></div>
   </div>
   <div class="add-wrap"><button class="add-btn" onclick="goAdd()">＋ Add Animal</button></div>
   <div class="tabs">
@@ -272,15 +277,46 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
       <input class="fi" type="text" id="fTag2" placeholder="e.g. #4472" autocomplete="off">
       <div id="fBreedWrap">
       <label class="fl">Breed</label>
-      <select class="fi" id="fBreed">
+      <select class="fi" id="fBreed" onchange="onCowBreedChange()">
         <option value="">— Select Breed —</option>
         <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
         <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
         <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
         <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
-        <option value="Crossbred">Crossbred / Mixed</option>
+        <option value="Crossbred">Crossbred / Mixed ▼ specify below</option>
         <option value="Other">Other</option>
       </select>
+      <!-- Shown only when Crossbred is selected -->
+      <div id="fCowCrossWrap" class="hidden">
+        <div style="background:#F0E8F8;border:1px solid #B48ACC;border-radius:8px;padding:12px;margin-top:10px;">
+          <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:#5A2080;margin-bottom:10px;font-weight:bold;">Specify Cross Parentage</div>
+          <div class="two">
+            <div>
+              <label class="fl" style="color:#5A2080;">Her Sire (Father) Breed</label>
+              <select class="fi" id="fCowSireBreed" onchange="updateCowCrossLabel()">
+                <option value="">— Unknown —</option>
+                <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
+                <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
+                <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
+                <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="fl" style="color:#5A2080;">Her Dam (Mother) Breed</label>
+              <select class="fi" id="fCowDamBreed" onchange="updateCowCrossLabel()">
+                <option value="">— Unknown —</option>
+                <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
+                <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
+                <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
+                <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div id="fCowCrossPreview" style="margin-top:8px;display:none;background:white;border:1px solid #B48ACC;border-radius:6px;padding:8px 12px;font-size:0.85rem;color:#5A2080;text-align:center;font-weight:bold;"></div>
+        </div>
+      </div>
       </div>
       <label class="fl">Color / Markings</label>
       <input class="fi" type="text" id="fColor" placeholder="e.g. Black with white face" autocomplete="off">
@@ -295,13 +331,19 @@ select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
       <div class="two">
         <div><label class="fl">Acquired Date</label><input class="fi" type="date" id="fAcq"></div>
         <div><label class="fl">Status</label>
-          <select class="fi" id="fStat">
+          <select class="fi" id="fStat" onchange="onStatusChange()">
             <option value="active">Active / In Herd</option>
             <option value="breeding">Breeding Stock</option>
             <option value="sold">Sold</option>
             <option value="deceased">Deceased</option>
           </select>
         </div>
+      </div>
+      <div id="fSoldReasonWrap" class="hidden">
+        <label class="fl">Sold To / Reason for Sale</label>
+        <input class="fi" type="text" id="fSoldReason" placeholder="e.g. John Smith Ranch, sold at auction…" autocomplete="off">
+        <label class="fl">Sale Date</label>
+        <input class="fi" type="date" id="fSoldDate">
       </div>
     </div>
 
@@ -435,13 +477,20 @@ function crossLabelFull(sb,db){
   return breedAbbr(sb)+breedAbbr(db)+' Cross — '+sb+' × '+db;
 }
 
-// Resolve cross label for a calf — always derives from sireBreed + damBreed (refreshing dam from linked profile)
 function resolveCalfBreed(a){
   var sb=a.sireBreed||'';
   var db=a.damBreed||'';
   // Always pull dam breed fresh from linked dam profile if available
-  if(a.damId){var dam=A.find(function(x){return x.id===a.damId;});if(dam&&dam.breed)db=dam.breed;}
-  var short=null, full=null;
+  if(a.damId){
+    var dam=A.find(function(x){return x.id===a.damId;});
+    if(dam){
+      // Use cross label if dam is crossbred, otherwise use breed
+      db=dam.breed==='Crossbred'&&(dam.cowSireBreed||dam.cowDamBreed)?
+        (crossLabel(dam.cowSireBreed||'',dam.cowDamBreed||'')||dam.breed):
+        (dam.breed||db);
+    }
+  }
+  var short=null,full=null;
   if(sb&&db){
     short=crossLabel(sb,db);
     full=crossLabelFull(sb,db);
@@ -486,12 +535,16 @@ function goAdd(){openForm(null);}
 function goBack(){editId?goProf(editId):goList();}
 
 function stats(){
-  var c=0,b=0,k=0;
-  A.forEach(function(a){if(a.type==='cow')c++;else if(a.type==='bull')b++;else k++;});
+  var c=0,b=0,k=0,s=0;
+  A.forEach(function(a){
+    if(a.status==='sold'){s++;return;}
+    if(a.type==='cow')c++;else if(a.type==='bull')b++;else k++;
+  });
   document.getElementById('stC').textContent=c;
   document.getElementById('stB').textContent=b;
   document.getElementById('stK').textContent=k;
-  document.getElementById('stT').textContent=A.length;
+  document.getElementById('stT').textContent=A.length-s;
+  document.getElementById('stS').textContent=s;
 }
 
 function setTF(f,btn){
@@ -580,21 +633,23 @@ function rl(){
       if(a.type==='calf'){
         var ri=resolveCalfBreed(a);
         breedDisplay=ri.short||a.breed||'';
+      } else if(a.breed==='Crossbred'&&(a.cowSireBreed||a.cowDamBreed)){
+        breedDisplay=crossLabel(a.cowSireBreed||'',a.cowDamBreed||'')||'Crossbred';
       } else {
         breedDisplay=a.breed||'';
       }
       var meta=[breedDisplay,ag||a.age,pregLabel].filter(Boolean).join(' · ');
       var bc=a.type==='cow'?'bc':a.type==='bull'?'bb':'bk';
-      html+='<div class="animal-row" onclick="goProf(\''+a.id+'\')">'+
-        '<div class="avi">'+emo(a.type)+'</div>'+
-        '<div class="ainfo">'+
-          '<div class="atag">'+(a.tag||'No Tag #')+'</div>'+
-          '<div class="ameta">'+(meta||'—')+'</div>'+
-          (a.expectedCalving&&ps==='pregnant'?'<div class="ameta" style="color:#6B7C5C">📅 Due: '+fmtDate(a.expectedCalving)+'</div>':'')+
-        '</div>'+
-        '<span class="abadge '+bc+'">'+a.type+'</span>'+
-        '<span class="achev">›</span>'+
-      '</div>';
+      var isSold=a.status==='sold';
+      if(isSold){
+        html+='<div class="animal-row" onclick="goProf(\''+a.id+'\')" style="background:#EDE0CC;opacity:0.55;">'+'<div class="avi" style="filter:grayscale(1);">'+emo(a.type)+'</div>'+'<div class="ainfo">'+'<div class="atag" style="text-decoration:line-through;color:#8C7A60;">'+(a.tag||'No Tag #')+'</div>'+'<div class="ameta">'+(breedDisplay||'—')+'</div>'+'</div>'+'<span class="abadge" style="background:#999;color:white;border-color:#999;">sold</span>'+'<span class="achev">›</span>'+'</div>';
+      } else {
+        html+='<div class="animal-row" onclick="goProf(\''+a.id+'\')">'+'<div class="avi">'+emo(a.type)+'</div>'+'<div class="ainfo">'+'<div class="atag">'+(a.tag||'No Tag #')+'</div>'+'<div class="ameta">'+(meta||'—')+'</div>'+(a.expectedCalving&&ps==='pregnant'?'<div class="ameta" style="color:#6B7C5C">📅 Due: '+fmtDate(a.expectedCalving)+'</div>':'')+
+          '</div>'+
+          '<span class="abadge '+bc+'">'+a.type+'</span>'+
+          '<span class="achev">›</span>'+
+        '</div>';
+      }
     });
   }
   document.getElementById('aList').innerHTML=html;
@@ -614,7 +669,11 @@ function goProf(id){
   if(a.type==='cow'){
     var ps=a.pregnancyStatus||'unknown';
     var psLabel=ps==='pregnant'?'🟢 Pregnant':ps==='open'?'🔵 Open':'⚪ Unknown';
-    pregCard='<div class="card"><h3>Pregnancy Status</h3>'+dr('Status',psLabel)+(ps==='pregnant'&&a.expectedCalving?dr('Expected Calving',fmtDate(a.expectedCalving)):'' )+'</div>';
+    var psColor=ps==='pregnant'?'#2E5A20':ps==='open'?'#7B4A00':'#8C7A60';
+    pregCard='<div class="card"><h3>Pregnancy Status</h3>'+
+      '<div class="drow"><span class="dk">Status</span><span class="dv" style="color:'+psColor+';font-weight:bold;">'+psLabel+'</span></div>'+
+      (ps==='pregnant'&&a.expectedCalving?'<div class="drow"><span class="dk">Expected Calving</span><span class="dv">'+fmtDate(a.expectedCalving)+'</span></div>':'')+
+    '</div>';
   }
 
   // CALVES — all tappable, showing inline detail popup
@@ -666,6 +725,8 @@ function goProf(id){
   if(a.type==='calf'){
     calfBreedInfo=resolveCalfBreed(a);
     breedDisplay=calfBreedInfo.short||breedDisplay;
+  } else if(a.breed==='Crossbred'&&(a.cowSireBreed||a.cowDamBreed)){
+    breedDisplay=crossLabel(a.cowSireBreed||'',a.cowDamBreed||'')||'Crossbred';
   }
   var pregTag='';
   if(a.type==='cow'){
@@ -674,7 +735,8 @@ function goProf(id){
   }
 
   document.getElementById('pBody').innerHTML=
-    '<div class="hero">'+
+    (a.status==='sold'?'<div style="background:#C0392B;color:white;text-align:center;font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;padding:7px;font-family:Georgia,serif;font-weight:bold;">● SOLD' + (a.soldDate?' — '+fmtDate(a.soldDate):'') + '</div>':'')+
+    '<div class="hero" style="'+(a.status==='sold'?'opacity:0.6;filter:grayscale(0.4);':'')+'">'+
       '<div class="hero-avi">'+emo(a.type)+'</div>'+
       '<div class="hero-info">'+
         '<div class="hero-tag">'+(a.tag||'No Tag #')+'</div>'+
@@ -698,13 +760,23 @@ function goProf(id){
         '<div class="drow"><span class="dk">Breed</span><span class="dv" style="text-align:right;">'+calfBreedInfo.full+'</span></div>'+
         (calfBreedInfo.sireBreed?'<div class="drow"><span class="dk">Sire Breed</span><span class="dv">'+calfBreedInfo.sireBreed+'</span></div>':'')+
         (calfBreedInfo.damBreed?'<div class="drow"><span class="dk">Dam Breed</span><span class="dv">'+calfBreedInfo.damBreed+'</span></div>':'')
-        : dr('Breed', a.crossLabel?a.crossLabel+(a.breed?' ('+a.breed+')':''):a.breed)
+      : a.breed==='Crossbred'&&(a.cowSireBreed||a.cowDamBreed)?
+        '<div class="drow"><span class="dk">Breed</span><span class="dv">'+crossLabelFull(a.cowSireBreed||'',a.cowDamBreed||'')+'</span></div>'+
+        (a.cowSireBreed?'<div class="drow"><span class="dk">Sire Breed</span><span class="dv">'+a.cowSireBreed+'</span></div>':'')+
+        (a.cowDamBreed?'<div class="drow"><span class="dk">Dam Breed</span><span class="dv">'+a.cowDamBreed+'</span></div>':'')
+      : dr('Breed', a.crossLabel?a.crossLabel+(a.breed?' ('+a.breed+')':''):a.breed)
       )+
       dr('Color',a.color)+
       (a.type==='calf'?dr('Sex',a.sex==='heifer'?'♀ Heifer':a.sex==='steer'?'♂ Steer':'♂ Bull Calf'):'')+
     '</div>'+
     '<div class="card"><h3>Age &amp; Dates</h3>'+
-      dr('Date of Birth',fmtDate(a.dob))+dr('Calculated Age',ag)+dr('Age (entered)',a.age)+dr('Acquired',fmtDate(a.acquired))+dr('Status',a.status)+
+      dr('Date of Birth',fmtDate(a.dob))+dr('Calculated Age',ag)+dr('Age (entered)',a.age)+dr('Acquired',fmtDate(a.acquired))+
+      dr('Status',a.status)+
+      (a.status!=='sold'?
+        '<div class="drow"><span class="dk">Mark Sold</span><span class="dv"><button onclick="markAsSold(\''+a.id+'\')" style="padding:5px 14px;background:none;border:1px solid #C9A96E;color:#7B4A00;border-radius:14px;font-family:Georgia,serif;font-size:0.72rem;cursor:pointer;">$ Mark as Sold</button></span></div>'
+      :'')+
+      (a.status==='sold'&&a.soldReason?dr('Sold To / Reason',a.soldReason):'')+
+      (a.status==='sold'&&a.soldDate?dr('Sale Date',fmtDate(a.soldDate)):'')+
     '</div>'+
     '<div class="card"><h3>Physical</h3>'+dr('Weight',a.weight?a.weight+' lbs':null)+dr('Body Condition',a.bcs)+'</div>'+
     '<div class="card"><h3>Parentage</h3>'+sireHtml+(a.sireBreed&&!a.sire?dr('Sire Breed',a.sireBreed):'')+damHtml+'</div>'+
@@ -897,6 +969,72 @@ function addCalfRow(data){
   if(data&&data.sireBreed)showRowCross(id,damBreed);
 }
 
+function onStatusChange(){
+  var v=document.getElementById('fStat').value;
+  document.getElementById('fSoldReasonWrap').className=(v==='sold'?'':'hidden');
+}
+
+function markAsSold(id){
+  var a=A.find(function(x){return x.id===id;});
+  if(!a)return;
+  var reason=prompt('Sold to / Reason for sale (optional):','');
+  if(reason===null)return; // cancelled
+  var dateVal=new Date().toISOString().substr(0,10);
+  a.status='sold';
+  a.soldReason=reason||null;
+  a.soldDate=dateVal;
+  if(a.type==='cow'){a.pregnancyStatus='open';a.expectedCalving=null;}
+  sv();
+  goProf(id);
+}
+
+function quickSetPreg(id,status){
+  var a=A.find(function(x){return x.id===id;});
+  if(status!=='pregnant')a.expectedCalving=null;
+  sv();
+  goProf(id); // re-render profile
+}
+
+function saveCalvingDate(id){
+  var a=A.find(function(x){return x.id===id;});
+  if(!a)return;
+  var inp=document.getElementById('calvingInput_'+id);
+  if(inp){a.expectedCalving=inp.value||null;}
+  sv();
+  goProf(id);
+}
+
+function onCowBreedChange(){
+  var v=document.getElementById('fBreed').value;
+  var wrap=document.getElementById('fCowCrossWrap');
+  if(v==='Crossbred'){
+    wrap.className='';
+  } else {
+    wrap.className='hidden';
+    document.getElementById('fCowSireBreed').value='';
+    document.getElementById('fCowDamBreed').value='';
+    document.getElementById('fCowCrossPreview').style.display='none';
+  }
+}
+
+function updateCowCrossLabel(){
+  var sb=document.getElementById('fCowSireBreed').value;
+  var db=document.getElementById('fCowDamBreed').value;
+  var prev=document.getElementById('fCowCrossPreview');
+  if(sb&&db){
+    var label=crossLabelFull(sb,db);
+    prev.textContent=label;
+    prev.style.display='block';
+  } else if(sb||db){
+    prev.textContent=(sb||'?')+' × '+(db||'?')+' — select both breeds to see cross label';
+    prev.style.display='block';
+    prev.style.color='#8C7A60';
+  } else {
+    prev.style.display='none';
+  }
+}
+
+
 function onRowSireChange(id, damBreed){
   // When sire breed changes, update cross label preview
   showRowCross(id, damBreed);
@@ -937,9 +1075,16 @@ function resetForm(){
   ['fColor','fAge','fWt','fBCS','fSire','fNotes'].forEach(function(i){var el=document.getElementById(i);if(el)el.value='';});
   document.getElementById('fTag2').value='';
   document.getElementById('fBreed').value='';
+  document.getElementById('fCowSireBreed').value='';
+  document.getElementById('fCowDamBreed').value='';
+  document.getElementById('fCowCrossWrap').className='hidden';
+  document.getElementById('fCowCrossPreview').style.display='none';
   document.getElementById('fDob').value='';
   document.getElementById('fAcq').value='';
   document.getElementById('fStat').value='active';
+  document.getElementById('fSoldReasonWrap').className='hidden';
+  document.getElementById('fSoldReason').value='';
+  document.getElementById('fSoldDate').value='';
   document.getElementById('fSex').value='heifer';
   document.getElementById('fSireBreed').value='';
   document.getElementById('fCalList').innerHTML='';
@@ -959,12 +1104,26 @@ function openForm(id,motherIdPreset){
     setType(a.type);
     document.getElementById('fTag2').value=a.tag||'';
     // Only set breed dropdown for non-calves; calves derive breed from sire x dam
-    if(a.type!=='calf') document.getElementById('fBreed').value=a.breed||'';
+    if(a.type!=='calf'){
+      document.getElementById('fBreed').value=a.breed||'';
+      // If crossbred, restore sire/dam breed fields
+      if(a.breed==='Crossbred'&&(a.cowSireBreed||a.cowDamBreed)){
+        document.getElementById('fCowCrossWrap').className='';
+        document.getElementById('fCowSireBreed').value=a.cowSireBreed||'';
+        document.getElementById('fCowDamBreed').value=a.cowDamBreed||'';
+        updateCowCrossLabel();
+      }
+    }
     document.getElementById('fColor').value=a.color||'';
     document.getElementById('fDob').value=a.dob||'';
     document.getElementById('fAge').value=a.age||'';
     document.getElementById('fAcq').value=a.acquired||'';
     document.getElementById('fStat').value=a.status||'active';
+    if(a.status==='sold'){
+      document.getElementById('fSoldReasonWrap').className='';
+      document.getElementById('fSoldReason').value=a.soldReason||'';
+      document.getElementById('fSoldDate').value=a.soldDate||'';
+    }
     document.getElementById('fWt').value=a.weight||'';
     document.getElementById('fBCS').value=a.bcs||'';
     document.getElementById('fSire').value=a.sire||'';
@@ -996,11 +1155,22 @@ function saveAnimal(){
   if(type==='calf'&&damId){var dam2=A.find(function(x){return x.id===damId;});if(dam2)damBreed=dam2.breed||'';}
 
   var cl=crossLabel(sireBreed,damBreed);
+  // For cows/bulls: compute cross label if Crossbred is selected
+  var cowBreed=type!=='calf'?document.getElementById('fBreed').value:'';
+  var cowSireBreed='', cowDamBreed='', cowCrossLabel=null;
+  if(cowBreed==='Crossbred'){
+    cowSireBreed=document.getElementById('fCowSireBreed').value;
+    cowDamBreed=document.getElementById('fCowDamBreed').value;
+    if(cowSireBreed&&cowDamBreed) cowCrossLabel=crossLabel(cowSireBreed,cowDamBreed);
+  }
+
   var data={
     id:editId||uid(),type:type,tag:tag,
-    // For calves, breed = the cross label (e.g. "CA Cross"); for cows/bulls, use the breed dropdown
-    breed:type==='calf'?(cl||''):(document.getElementById('fBreed').value),
-    crossLabel:type==='calf'?cl:null,
+    // For calves, breed = cross label; for cows/bulls use breed dropdown
+    breed:type==='calf'?(cl||''):cowBreed,
+    crossLabel:type==='calf'?cl:(cowCrossLabel||null),
+    cowSireBreed:type!=='calf'?cowSireBreed:null,
+    cowDamBreed:type!=='calf'?cowDamBreed:null,
     sireBreed:sireBreed,
     damBreed:type==='calf'?damBreed:null,
     color:document.getElementById('fColor').value.trim(),
@@ -1008,6 +1178,8 @@ function saveAnimal(){
     age:document.getElementById('fAge').value.trim(),
     acquired:document.getElementById('fAcq').value,
     status:document.getElementById('fStat').value,
+    soldReason:document.getElementById('fStat').value==='sold'?(document.getElementById('fSoldReason').value.trim()||null):null,
+    soldDate:document.getElementById('fStat').value==='sold'?(document.getElementById('fSoldDate').value||null):null,
     weight:document.getElementById('fWt').value,
     bcs:document.getElementById('fBCS').value,
     sire:document.getElementById('fSire').value.trim(),
@@ -1122,7 +1294,8 @@ function renderReports(){
       var xi1=cx+hole*Math.cos(angle),yi1=cy+hole*Math.sin(angle);
       var xi2=cx+hole*Math.cos(a2),yi2=cy+hole*Math.sin(a2);
       var lg=pct>0.5?1:0;
-      svg+='<path d="M'+xi1.toFixed(1)+' '+yi1.toFixed(1)+' L'+x1.toFixed(1)+' '+y1.toFixed(1)+' A'+r+' '+r+' 0 '+lg+' 1 '+x2.toFixed(1)+' '+y2.toFixed(1)+' L'+xi2.toFixed(1)+' '+yi2.toFixed(1)+' A'+hole+' '+hole+' 0 '+lg+' 0 '+xi1.toFixed(1)+' '+yi1.toFixed(1)+' Z" fill="'+s.c+'" stroke="white" stroke-width="1.5"/>';
+      var tipText=s.l+': '+s.v+' ('+Math.round(pct*100)+'%)';
+      svg+='<path d="M'+xi1.toFixed(1)+' '+yi1.toFixed(1)+' L'+x1.toFixed(1)+' '+y1.toFixed(1)+' A'+r+' '+r+' 0 '+lg+' 1 '+x2.toFixed(1)+' '+y2.toFixed(1)+' L'+xi2.toFixed(1)+' '+yi2.toFixed(1)+' A'+hole+' '+hole+' 0 '+lg+' 0 '+xi1.toFixed(1)+' '+yi1.toFixed(1)+' Z" fill="'+s.c+'" stroke="white" stroke-width="1.5" data-tip="'+tipText+'" style="cursor:pointer;transition:opacity 0.15s;" onmouseenter="this.style.opacity=\'0.75\'" onmouseleave="this.style.opacity=\'1\'"/>';
       angle=a2;
     });
     return svg;
@@ -1134,7 +1307,8 @@ function renderReports(){
     if(!max)return noData();
     return items.map(function(i){
       var pct=Math.round(i.v/max*100);
-      return '<div style="margin-bottom:11px;">'+
+      var tip=i.l+': '+i.v;
+      return '<div style="margin-bottom:11px;" onmouseenter="showTip(event,\''+tip+'\')" onmousemove="moveTip(event)" onmouseleave="hideTip()">'+
         '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">'+
           '<span style="font-size:0.8rem;color:#2C1A0E;font-weight:bold;">'+i.l+'</span>'+
           '<span style="font-size:0.8rem;color:#8C7A60;font-weight:bold;">'+i.v+'</span>'+
@@ -1148,13 +1322,16 @@ function renderReports(){
   function noData(){return '<p style="color:#8C7A60;font-style:italic;font-size:0.85rem;padding:4px 0;">No data recorded yet.</p>';}
 
   function rCard(title,content,exportKey){
-    var exportBtn=exportKey?
-      '<button onclick="exportSection(\''+exportKey+'\')" style="background:none;border:1px solid #C9A96E;color:#8C7A60;border-radius:5px;padding:3px 9px;font-size:0.62rem;font-family:Georgia,serif;cursor:pointer;white-space:nowrap;">⬇ CSV</button>':
+    var btns=exportKey?
+      '<div style="display:flex;gap:6px;">'+
+        '<button onclick="exportSection(\''+exportKey+'\')" style="background:none;border:1px solid #C9A96E;color:#8C7A60;border-radius:5px;padding:3px 9px;font-size:0.62rem;font-family:Georgia,serif;cursor:pointer;white-space:nowrap;">⬇ CSV</button>'+
+        '<button onclick="exportSectionPdf(\''+exportKey+'\')" style="background:none;border:1px solid #C9A96E;color:#8C7A60;border-radius:5px;padding:3px 9px;font-size:0.62rem;font-family:Georgia,serif;cursor:pointer;white-space:nowrap;">⬇ PDF</button>'+
+      '</div>':
       '';
     return '<div style="background:#FDF6E8;border:1px solid #C9A96E;border-radius:10px;padding:16px;margin-bottom:14px;">'+
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #C9A96E;">'+
         '<h3 style="font-size:0.65rem;letter-spacing:0.13em;text-transform:uppercase;color:#A0440A;margin:0;">'+title+'</h3>'+
-        exportBtn+
+        btns+
       '</div>'+
       content+'</div>';
   }
@@ -1187,7 +1364,20 @@ function renderReports(){
   var unkCt=cows.length-pregCt-openCt;
   var pS=[{l:'Pregnant',v:pregCt,c:'#6B7C5C'},{l:'Open',v:openCt,c:C[2]},{l:'Unknown',v:unkCt,c:C[6]}].filter(function(s){return s.v>0;});
   var pSvg=cows.length?('<svg width="120" height="120" style="display:block;margin:0 auto 10px;">'+donut(pS,60,60,52,30)+'<text x="60" y="56" text-anchor="middle" font-family="Georgia,serif" font-size="18" font-weight="bold" fill="#2C1A0E">'+cows.length+'</text><text x="60" y="68" text-anchor="middle" font-family="Georgia,serif" font-size="9" fill="#8C7A60">COWS</text></svg>'):'';
-  var pr=cows.length?(pSvg+legend(pS)+sRow('Pregnant',pregCt,'#2E5A20')+sRow('Open',openCt,'#7B4A00')+sRow('Unknown',unkCt)+sRow('Pregnancy rate',Math.round(pregCt/cows.length*100)+'%','#2E5A20')):noData();
+
+  // Clickable pregnancy rows
+  var pregRows=[
+    {label:'🔍 Pregnant',key:'pregnant',v:pregCt,c:'#2E5A20'},
+    {label:'🔍 Open',key:'open',v:openCt,c:'#7B4A00'},
+    {label:'Unknown',key:'unknown',v:unkCt,c:'#8C7A60'}
+  ].filter(function(r){return r.v>0;}).map(function(r){
+    return '<div onclick="filterByPreg(\''+r.key+'\')" style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dotted #C9A96E55;cursor:'+(r.key!=='unknown'?'pointer':'default')+';">'+
+      '<span style="font-size:0.78rem;color:#8C7A60;">'+r.label+'</span>'+
+      '<span style="font-size:0.9rem;font-weight:bold;color:'+r.c+';">'+r.v+'</span>'+
+    '</div>';
+  }).join('');
+
+  var pr=cows.length?(pSvg+legend(pS)+pregRows+sRow('Pregnancy rate',Math.round(pregCt/cows.length*100)+'%','#2E5A20')):noData();
 
   // 3. UPCOMING CALVINGS
   var upcoming=cows.filter(function(c){return c.pregnancyStatus==='pregnant'&&c.expectedCalving;}).sort(function(a,b){return a.expectedCalving.localeCompare(b.expectedCalving);}).slice(0,6);
@@ -1195,10 +1385,13 @@ function renderReports(){
     var diff=Math.round((new Date(c.expectedCalving+'T00:00:00')-now)/86400000);
     var label=diff<0?Math.abs(diff)+' days overdue':diff===0?'Today!':diff+' days away';
     var col=diff<0?'#C0392B':diff<14?'#C9762A':'#6B7C5C';
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px dotted #C9A96E55;">'+
-      '<div><div style="font-weight:bold;font-size:0.9rem;">'+(c.tag||'No Tag')+'</div>'+
-      '<div style="font-size:0.7rem;color:#8C7A60;">'+fmtDate(c.expectedCalving)+(c.breed?' · '+c.breed:'')+'</div></div>'+
-      '<span style="font-size:0.78rem;font-weight:bold;color:'+col+';">'+label+'</span></div>';
+    return '<div onclick="closeAndGoProf(\''+c.id+'\')" style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px dotted #C9A96E55;cursor:pointer;">'+
+      '<div>'+
+        '<div style="font-weight:bold;font-size:0.9rem;color:#A0440A;">🔍 '+(c.tag||'No Tag')+'</div>'+
+        '<div style="font-size:0.7rem;color:#8C7A60;">'+fmtDate(c.expectedCalving)+(c.breed?' · '+(c.crossLabel||c.breed):'')+'</div>'+
+      '</div>'+
+      '<span style="font-size:0.78rem;font-weight:bold;color:'+col+';">'+label+'</span>'+
+    '</div>';
   }).join(''):noData();
 
   // 4. CALVES BY AGE
@@ -1213,69 +1406,103 @@ function renderReports(){
     else if(mo<24)ab['1–2 yr']++;
     else ab['2+ yr']++;
   });
-  var ageItems=Object.keys(ab).map(function(k,i){return{l:k,v:ab[k],c:C[i]};}).filter(function(x){return x.v>0;});
-  var age=calves.length?(barChart(ageItems)+sRow('Total calves',calves.length)):noData();
+  var ageItems=Object.keys(ab).map(function(k,i){return{l:k,key:k,v:ab[k],c:C[i]};}).filter(function(x){return x.v>0;});
+  var age=calves.length?(iBarChart(ageItems,'filterByAge')+sRow('Total calves',calves.length)):noData();
 
-  // 5. BREED BREAKDOWN — with percentages, split by animal type
-  var bmAll={}, bmCalves={}, bmCows={}, bmBulls={};
-  function addToMap(map, key){ map[key]=(map[key]||0)+1; }
-  A.forEach(function(a){
-    var b;
-    if(a.type==='calf'){
-      var info=resolveCalfBreed(a);
-      b=info.short||(a.breed||'Unknown');
-    } else {
-      b=(a.crossLabel&&a.crossLabel.indexOf('Purebred')<0)?a.crossLabel:(a.breed||'Unknown');
-    }
-    addToMap(bmAll, b);
-    if(a.type==='calf') addToMap(bmCalves, b);
-    else if(a.type==='cow') addToMap(bmCows, b);
-    else if(a.type==='bull') addToMap(bmBulls, b);
-  });
-
-  // Percentage bar chart
-  function pctBarChart(map, totalCount){
-    if(!totalCount) return noData();
-    return Object.keys(map).sort(function(a,b){return map[b]-map[a];}).slice(0,12).map(function(k,i){
-      var pct=Math.round(map[k]/totalCount*100);
-      return '<div style="margin-bottom:11px;">'+
+  function iBarChart(items, filterFn){
+    if(!items.length)return noData();
+    var max=Math.max.apply(null,items.map(function(i){return i.v;}));
+    if(!max)return noData();
+    return items.map(function(i){
+      var pct=Math.round(i.v/max*100);
+      var tip=i.l+': '+i.v+(i.pct?' ('+i.pct+'%)':'')+(filterFn?' — tap to filter':'');
+      return '<div style="margin-bottom:11px;cursor:'+(filterFn?'pointer':'default')+';" '+
+        (filterFn?'onclick="'+filterFn+'(\''+i.key+'\')"':'')+
+        ' onmouseenter="showTip(event,\''+tip+'\')" onmousemove="moveTip(event)" onmouseleave="hideTip()">'+
         '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">'+
-          '<span style="font-size:0.8rem;color:#2C1A0E;font-weight:bold;">'+k+'</span>'+
-          '<span style="font-size:0.8rem;color:#8C7A60;font-weight:bold;">'+map[k]+' &nbsp;<span style="color:#A0440A;">'+pct+'%</span></span>'+
+          '<span style="font-size:0.8rem;color:'+(filterFn?'#A0440A':'#2C1A0E')+';font-weight:bold;">'+(filterFn?'🔍 ':'')+i.l+'</span>'+
+          '<span style="font-size:0.8rem;color:#8C7A60;font-weight:bold;">'+i.v+(i.pct?' <span style="color:#A0440A;">'+i.pct+'%</span>':'')+'</span>'+
         '</div>'+
         '<div style="background:#EDD89A;border-radius:5px;height:20px;overflow:hidden;">'+
-          '<div style="background:'+C[i%C.length]+';height:100%;width:'+pct+'%;border-radius:5px;position:relative;">'+
-            (pct>12?'<span style="position:absolute;right:6px;top:2px;font-size:0.68rem;color:white;font-weight:bold;">'+pct+'%</span>':'')+
-          '</div>'+
-        '</div>'+
-      '</div>';
+          '<div style="background:'+i.c+';height:100%;width:'+pct+'%;border-radius:5px;"></div>'+
+        '</div></div>';
     }).join('');
   }
 
-  var breedAll = A.length ? pctBarChart(bmAll, A.length) : noData();
-  var breedCalves = calves.length ? pctBarChart(bmCalves, calves.length) : noData();
-  var breedCows = cows.length ? pctBarChart(bmCows, cows.length) : noData();
+  // 5. BREED BREAKDOWN — three donuts side by side
+  var bmAll={}, bmCalves={}, bmCows={};
+  A.forEach(function(a){
+    var b;
+    if(a.type==='calf'){var info=resolveCalfBreed(a);b=info.short||(a.breed||'Unknown');}
+    else if(a.breed==='Crossbred'&&(a.cowSireBreed||a.cowDamBreed)){b=crossLabel(a.cowSireBreed||'',a.cowDamBreed||'')||'Crossbred';}
+    else{b=a.breed||'Unknown';}
+    bmAll[b]=(bmAll[b]||0)+1;
+    if(a.type==='calf')bmCalves[b]=(bmCalves[b]||0)+1;
+    else if(a.type==='cow')bmCows[b]=(bmCows[b]||0)+1;
+  });
 
-  var breedTabs =
-    '<div style="margin-bottom:14px;">' +
-      '<div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:#A0440A;margin-bottom:8px;">Full Herd</div>' +
-      breedAll +
-    '</div>' +
-    (calves.length ? '<div style="margin-top:14px;padding-top:14px;border-top:1px solid #C9A96E55;"><div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:#6B7C5C;margin-bottom:8px;">Calves Only</div>' + breedCalves + '</div>' : '') +
-    (cows.length ? '<div style="margin-top:14px;padding-top:14px;border-top:1px solid #C9A96E55;"><div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:#2A3C6E;margin-bottom:8px;">Cows Only</div>' + breedCows + '</div>' : '');
+  function breedDonut(map,cnt,label,cx,r){
+    var sorted=Object.keys(map).sort(function(a,b){return map[b]-map[a];}).slice(0,8);
+    var slices=sorted.map(function(k,i){return{l:k,v:map[k],c:C[i%C.length]};});
+    if(!slices.length)return '';
+    return donut(slices,cx,r+14,r,r*0.52);
+  }
 
-  // 6. CALVING BY YEAR
+  // Build all-breeds sorted list for the shared legend
+  var allBreedsSorted=Object.keys(bmAll).sort(function(a,b){return bmAll[b]-bmAll[a];}).slice(0,10);
+  var breedColorMap={};
+  allBreedsSorted.forEach(function(b,i){breedColorMap[b]=C[i%C.length];});
+
+  function makeDonutSvg(map,totalN,titleLabel,svgW,svgH,cx,cy,r){
+    var sorted=Object.keys(map).sort(function(a,b){return map[b]-map[a];}).slice(0,10);
+    var slices=sorted.map(function(k){return{l:k,v:map[k],c:breedColorMap[k]||C[9]};});
+    var svg='<svg width="'+svgW+'" height="'+svgH+'" style="overflow:visible;">'+
+      donut(slices,cx,cy,r,r*0.52)+
+      '<text x="'+cx+'" y="'+(cy-6)+'" text-anchor="middle" font-family="Georgia,serif" font-size="'+(r*0.32)+'" font-weight="bold" fill="#2C1A0E">'+totalN+'</text>'+
+      '<text x="'+cx+'" y="'+(cy+10)+'" text-anchor="middle" font-family="Georgia,serif" font-size="'+(r*0.22)+'" fill="#8C7A60">'+titleLabel+'</text>'+
+      '</svg>';
+    return svg;
+  }
+
+  var donutR=52;
+  var donutSvgH=donutR*2+28;
+
+  // Three donuts in a row
+  var breedDonutRow=
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">'+
+      (A.length?'<div style="text-align:center;"><div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.08em;color:#A0440A;margin-bottom:6px;">All Animals</div>'+makeDonutSvg(bmAll,A.length,'head',donutR*2+4,donutSvgH,donutR+2,donutR+14,donutR)+'</div>':'')+
+      (cows.length?'<div style="text-align:center;"><div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.08em;color:#7B4A00;margin-bottom:6px;">Cows</div>'+makeDonutSvg(bmCows,cows.length,'cows',donutR*2+4,donutSvgH,donutR+2,donutR+14,donutR)+'</div>':'')+
+      (calves.length?'<div style="text-align:center;"><div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.08em;color:#2E5A20;margin-bottom:6px;">Calves</div>'+makeDonutSvg(bmCalves,calves.length,'calves',donutR*2+4,donutSvgH,donutR+2,donutR+14,donutR)+'</div>':'')+
+    '</div>';
+
+  // Shared legend — clickable to filter
+  var breedLegend='<div style="border-top:1px solid #C9A96E55;padding-top:12px;">'+
+    '<div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.08em;color:#8C7A60;margin-bottom:8px;">Tap a breed to filter the herd list</div>'+
+    allBreedsSorted.map(function(b){
+      var pct=Math.round(bmAll[b]/A.length*100);
+      return '<div onclick="filterByBreed(\''+b.replace(/'/g,"\\'")+'\')" style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dotted #C9A96E33;cursor:pointer;">'+
+        '<span style="width:12px;height:12px;border-radius:50%;background:'+breedColorMap[b]+';flex-shrink:0;display:inline-block;"></span>'+
+        '<span style="font-size:0.82rem;font-weight:bold;color:#A0440A;flex:1;">'+b+'</span>'+
+        '<span style="font-size:0.75rem;color:#8C7A60;">'+bmAll[b]+' &nbsp;<b style="color:#A0440A;">'+pct+'%</b></span>'+
+        '<span style="font-size:0.7rem;color:#C9A96E;">›</span>'+
+      '</div>';
+    }).join('')+
+  '</div>';
+
+  var breedTabs=breedDonutRow+breedLegend;
+
+  // 6. CALVING BY YEAR — clickable
   var ym={};
   calves.forEach(function(c){if(c.dob){var y=c.dob.substr(0,4);ym[y]=(ym[y]||0)+1;}});
   cows.forEach(function(c){if(c.calves)c.calves.forEach(function(cv){if(cv.calvingDate){var y=cv.calvingDate.substr(0,4);ym[y]=(ym[y]||0)+1;}});});
-  var yrItems=Object.keys(ym).sort().map(function(y,i){return{l:y,v:ym[y],c:C[i%C.length]};});
-  var yr=yrItems.length?barChart(yrItems):noData();
+  var yrItems=Object.keys(ym).sort().map(function(y,i){return{l:y,key:y,v:ym[y],c:C[i%C.length]};});
+  var yr=yrItems.length?iBarChart(yrItems,'filterByYear'):noData();
 
-  // 7. STATUS
+  // 7. STATUS — clickable
   var sm={};
   A.forEach(function(a){var s=a.status||'active';sm[s]=(sm[s]||0)+1;});
-  var stItems=Object.keys(sm).sort(function(a,b){return sm[b]-sm[a];}).map(function(k,i){return{l:k.charAt(0).toUpperCase()+k.slice(1),v:sm[k],c:C[i]};});
-  var st=stItems.length?barChart(stItems):noData();
+  var stItems=Object.keys(sm).sort(function(a,b){return sm[b]-sm[a];}).map(function(k,i){return{l:k.charAt(0).toUpperCase()+k.slice(1),key:k,v:sm[k],c:C[i]};});
+  var st=stItems.length?iBarChart(stItems,'filterByStatus'):noData();
 
   // 8. WEIGHT
   function wStat(arr,label){
@@ -1347,6 +1574,30 @@ function renderReports(){
     }).join('')
   : noData();
 
+  // Calf breed % breakdown for buyer card
+  var calfBreedMap={};
+  calves.forEach(function(c){
+    var b=resolveCalfBreed(c).short||c.breed||'Unknown';
+    calfBreedMap[b]=(calfBreedMap[b]||0)+1;
+  });
+  var calfBreedTotal=calves.length||1;
+  var calfBreedSorted=Object.keys(calfBreedMap).sort(function(a,b){return calfBreedMap[b]-calfBreedMap[a];});
+  var calfBreedSlices=calfBreedSorted.slice(0,8).map(function(k,i){return{l:k,v:calfBreedMap[k],c:C[i%C.length]};});
+  var calfBreedDonut=calves.length?'<svg width="110" height="110" style="display:block;margin:0 auto 8px;">'+
+    donut(calfBreedSlices,55,55,48,28)+
+    '<text x="55" y="51" text-anchor="middle" font-family="Georgia,serif" font-size="14" font-weight="bold" fill="#2C1A0E">'+calves.length+'</text>'+
+    '<text x="55" y="63" text-anchor="middle" font-family="Georgia,serif" font-size="8" fill="#8C7A60">CALVES</text>'+
+  '</svg>':'';
+  var calfBreedLegend=calfBreedSorted.slice(0,8).map(function(k,i){
+    var pct=Math.round(calfBreedMap[k]/calfBreedTotal*100);
+    return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px dotted #C9A96E33;">'+
+      '<span style="width:10px;height:10px;border-radius:50%;background:'+C[i%C.length]+';flex-shrink:0;display:inline-block;"></span>'+
+      '<span style="font-size:0.8rem;font-weight:bold;flex:1;">'+k+'</span>'+
+      '<span style="font-size:0.78rem;color:#A0440A;font-weight:bold;">'+pct+'%</span>'+
+      '<span style="font-size:0.72rem;color:#8C7A60;">('+calfBreedMap[k]+')</span>'+
+    '</div>';
+  }).join('');
+
   var buyerContent=
     (calves.length ? sexSvg+legend(sexS) : '')+
     sRow('Total Calves Available',calves.length)+
@@ -1357,13 +1608,16 @@ function renderReports(){
     (calfWeights.length?sRow('Weight Range',Math.min.apply(null,calfWeights)+' – '+Math.max.apply(null,calfWeights)+' lbs'):'')+
     sRow('With recorded DOB',calvesWithDob)+
     sRow('With recorded weight',calvesWithWeight)+
-    '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #C9A96E55;">'+
-      '<div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:#A0440A;margin-bottom:10px;">Sire (Bull) Breeds Used</div>'+
-      sireBreedHtml+
-    '</div>'+
+    (calves.length?
+      '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #C9A96E55;">'+
+        '<div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:#A0440A;margin-bottom:10px;">Breed Breakdown</div>'+
+        calfBreedDonut+
+        calfBreedLegend+
+      '</div>'
+    :'')+
     (Object.keys(bcsMap).length?
       '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #C9A96E55;">'+
-        '<div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:#A0440A;margin-bottom:10px;">Body Condition Score Distribution</div>'+
+        '<div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:#A0440A;margin-bottom:10px;">Body Condition Score</div>'+
         bcsHtml+
       '</div>'
     :'');
@@ -1372,13 +1626,145 @@ function renderReports(){
     rCard('🐄 Herd Overview',ov,'overview')+
     rCard('🟢 Pregnancy Status',pr,'pregnancy')+
     rCard('📅 Upcoming Calvings',upHtml,'calvings')+
-    rCard('🐮 Calves by Age',age,'calves_age')+
     rCard('🛒 Calf Buyer Summary',buyerContent,'buyer')+
+    rCard('🐮 Calves by Age',age,'calves_age')+
     rCard('🧬 Breed Breakdown — % of Herd',breedTabs,'breeds')+
-    rCard('📆 Calving Activity by Year',yr,'calving_year')+
-    rCard('📋 Herd Status',st,'status')+
     rCard('⚖️ Weight Summary',wt,'weight')+
     '<p style="text-align:center;font-size:0.7rem;color:#8C7A60;padding:8px 0 20px;">'+total+' animals recorded in Ranch Book</p>';
+
+  // Wire tooltip listeners to all donut SVG paths
+  document.getElementById('reportBody').querySelectorAll('svg').forEach(function(svg){
+    attachDonutTips(svg);
+  });
+}
+
+// ---- REPORT INTERACTIVE FILTERS ----
+// Each applies a filter to the main list and navigates there
+
+function closeAndGoProf(id){
+  goProf(id);
+}
+
+function filterByBreed(breed){
+  // Set filter and navigate to list
+  activeFilters={breed:breed,sort:'tag'};
+  typeFilt='all';
+  document.querySelectorAll('.tab-btn').forEach(function(t){t.classList.remove('on');});
+  document.querySelector('.tab-btn').classList.add('on');
+  // Update filter bar display
+  document.getElementById('ffBreed').value=breed;
+  updateFilterBar();
+  goList();
+  // Show a toast
+  showFilterToast('Showing breed: '+breed);
+}
+
+function filterByStatus(status){
+  activeFilters={status:status,sort:'tag'};
+  typeFilt='all';
+  document.querySelectorAll('.tab-btn').forEach(function(t){t.classList.remove('on');});
+  document.querySelector('.tab-btn').classList.add('on');
+  document.getElementById('ffStatus').value=status;
+  updateFilterBar();
+  goList();
+  showFilterToast('Showing status: '+status);
+}
+
+function filterByPreg(preg){
+  if(preg==='unknown')return; // unknown not filterable meaningfully
+  activeFilters={preg:preg,sort:'tag'};
+  typeFilt='cow';
+  document.querySelectorAll('.tab-btn').forEach(function(t,i){t.classList.remove('on');if(i===1)t.classList.add('on');});
+  document.getElementById('ffPreg').value=preg;
+  updateFilterBar();
+  goList();
+  showFilterToast('Showing cows: '+preg);
+}
+
+function filterByAge(bucket){
+  // Filter calves list — we set typeFilt to calf and use DOB range
+  activeFilters={sort:'dob'};
+  typeFilt='calf';
+  var now=new Date();
+  var from='',to='';
+  if(bucket==='< 3 mo'){
+    from=dateMinus(now,90); to=dateStr(now);
+  } else if(bucket==='3–6 mo'){
+    from=dateMinus(now,180); to=dateMinus(now,90);
+  } else if(bucket==='6–12 mo'){
+    from=dateMinus(now,365); to=dateMinus(now,180);
+  } else if(bucket==='1–2 yr'){
+    from=dateMinus(now,730); to=dateMinus(now,365);
+  } else if(bucket==='2+ yr'){
+    from=''; to=dateMinus(now,730);
+    activeFilters.dobTo=to;
+  }
+  if(from){activeFilters.dobFrom=from; document.getElementById('ffDobFrom').value=from;}
+  if(to&&bucket!=='2+ yr'){activeFilters.dobTo=to; document.getElementById('ffDobTo').value=to;}
+  document.querySelectorAll('.tab-btn').forEach(function(t,i){t.classList.remove('on');if(i===3)t.classList.add('on');});
+  updateFilterBar();
+  goList();
+  showFilterToast('Calves aged: '+bucket);
+}
+
+function filterByYear(year){
+  activeFilters={dobFrom:year+'-01-01',dobTo:year+'-12-31',sort:'dob'};
+  typeFilt='all';
+  document.querySelectorAll('.tab-btn').forEach(function(t){t.classList.remove('on');});
+  document.querySelector('.tab-btn').classList.add('on');
+  document.getElementById('ffDobFrom').value=year+'-01-01';
+  document.getElementById('ffDobTo').value=year+'-12-31';
+  updateFilterBar();
+  goList();
+  showFilterToast('Born in: '+year);
+}
+
+function dateStr(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function dateMinus(d,days){
+  var nd=new Date(d.getTime()-days*86400000);
+  return dateStr(nd);
+}
+
+// Toast notification shown when filter is applied from reports
+function showTip(e,html){
+  var t=document.getElementById('chartTip');
+  t.innerHTML=html;t.style.display='block';
+  moveTip(e);
+}
+function moveTip(e){
+  var t=document.getElementById('chartTip');
+  var x=(e.touches?e.touches[0].clientX:e.clientX);
+  var y=(e.touches?e.touches[0].clientY:e.clientY);
+  var tw=t.offsetWidth,th=t.offsetHeight;
+  var left=x+14; if(left+tw>window.innerWidth-8)left=x-tw-14;
+  var top=y-th/2; if(top<8)top=8; if(top+th>window.innerHeight-8)top=window.innerHeight-th-8;
+  t.style.left=left+'px';t.style.top=top+'px';
+}
+function hideTip(){document.getElementById('chartTip').style.display='none';}
+
+// Attach tooltip listeners to SVG paths after render
+function attachDonutTips(svgEl){
+  if(!svgEl)return;
+  svgEl.querySelectorAll('path[data-tip]').forEach(function(p){
+    p.addEventListener('mouseenter',function(e){showTip(e,p.getAttribute('data-tip'));});
+    p.addEventListener('mousemove',moveTip);
+    p.addEventListener('mouseleave',hideTip);
+    p.addEventListener('touchstart',function(e){showTip(e,p.getAttribute('data-tip'));e.stopPropagation();});
+    p.addEventListener('touchend',function(){setTimeout(hideTip,1200);});
+  });
+}
+
+function showFilterToast(msg){
+  var existing=document.getElementById('filterToast');
+  if(existing)existing.remove();
+  var t=document.createElement('div');
+  t.id='filterToast';
+  t.textContent=msg+' — tap Filter & Sort to clear';
+  t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#2C1A0E;color:#F5ECD7;padding:10px 18px;border-radius:20px;font-size:0.78rem;font-family:Georgia,serif;z-index:500;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.3);';
+  document.body.appendChild(t);
+  setTimeout(function(){if(t.parentNode)t.remove();},3000);
 }
 
 function exportSection(key){
@@ -1546,6 +1932,58 @@ function exportSection(key){
   dlLink.click();
   document.body.removeChild(dlLink);
   URL.revokeObjectURL(url);
+}
+
+function exportSectionPdf(key){
+  // Build a clean printable HTML page for this section and open print dialog
+  var titles={
+    overview:'Herd Overview',pregnancy:'Pregnancy Status',calvings:'Upcoming Calvings',
+    buyer:'Calf Buyer Summary',calves_age:'Calves by Age',breeds:'Breed Breakdown',weight:'Weight Summary'
+  };
+  var title=titles[key]||key;
+  var now=new Date();
+  var dateStr=now.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+
+  // Grab the card's inner HTML from the rendered report
+  var cards=document.getElementById('reportBody').querySelectorAll('div[style*="background:#FDF6E8"]');
+  var cardHtml='';
+  cards.forEach(function(card){
+    var h3=card.querySelector('h3');
+    if(h3&&h3.textContent.toLowerCase().indexOf(title.toLowerCase().split(' ')[0])>=0){
+      // Clone and strip export buttons
+      var clone=card.cloneNode(true);
+      clone.querySelectorAll('button').forEach(function(b){b.remove();});
+      cardHtml=clone.innerHTML;
+    }
+  });
+
+  // If specific card not found, use all report content
+  if(!cardHtml){
+    var allContent=document.getElementById('reportBody').cloneNode(true);
+    allContent.querySelectorAll('button').forEach(function(b){b.remove();});
+    cardHtml=allContent.innerHTML;
+    title='Full Herd Report';
+  }
+
+  var win=window.open('','_blank');
+  win.document.write(
+    '<!DOCTYPE html><html><head><meta charset="UTF-8">'+
+    '<title>Ranch Book — '+title+'</title>'+
+    '<style>'+
+      'body{font-family:Georgia,serif;color:#2C1A0E;margin:32px;background:white;font-size:13px;}'+
+      'h1{font-size:1.4rem;color:#A0440A;margin-bottom:4px;}'+
+      '.meta{font-size:0.75rem;color:#8C7A60;margin-bottom:24px;}'+
+      'h3{font-size:0.65rem;letter-spacing:0.13em;text-transform:uppercase;color:#A0440A;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #C9A96E;}'+
+      'svg{display:block;margin:8px auto;}'+
+      '@media print{body{margin:16px;} button{display:none!important;}}'+
+    '</style></head><body>'+
+    '<h1>🐂 Ranch Book — '+title+'</h1>'+
+    '<p class="meta">Generated '+dateStr+' &nbsp;·&nbsp; '+A.length+' animals on record</p>'+
+    cardHtml+
+    '<script>window.onload=function(){window.print();}<\/script>'+
+    '</body></html>'
+  );
+  win.document.close();
 }
 </script>
 </body>
