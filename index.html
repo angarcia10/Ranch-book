@@ -1,45 +1,122 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ranch Book</title>
 <style>
+/* ── THEME VARIABLES ─────────────────────────────────────────────────────── */
+:root{
+  --c-primary:#A0440A;    /* topbar, buttons, accents */
+  --c-primary-dk:#7B3A10; /* stats bar, darker primary */
+  --c-gold:#D4A84B;       /* topbar border, stat numbers */
+  --c-bg:#F5ECD7;         /* page background */
+  --c-text:#2C1A0E;       /* body text */
+  --c-surface:#FDF6E8;    /* card/row background */
+  --c-surface2:#F0E4C8;   /* toolbar/tab background */
+  --c-border:#C9A96E;     /* borders */
+  --c-muted:#8C7A60;      /* muted text */
+  --c-light:#F5ECD7;      /* light text on dark bg */
+  --c-avi:#EDD89A;        /* avatar background */
+  --c-hero1:#FDF6E8;      /* hero gradient start */
+  --c-hero2:#EDD89A;      /* hero gradient end */
+  --c-badge-cow:#EDD89A;  --c-badge-cow-t:#7B4A00;
+  --c-badge-bull:#C9D4E8; --c-badge-bull-t:#2A3C6E;
+  --c-badge-calf:#D4EAC8; --c-badge-calf-t:#2E5A20;
+}
+
+/* ── THEMES ─────────────────────────────────────────────────────────────── */
+[data-theme="midnight"]{
+  --c-primary:#1A6B8A;--c-primary-dk:#0F4560;--c-gold:#5BBDE0;
+  --c-bg:#0D1B2A;--c-text:#D4E8F4;--c-surface:#132436;--c-surface2:#0F1E2E;
+  --c-border:#2A5A7A;--c-muted:#6A8FA8;--c-light:#D4E8F4;
+  --c-avi:#1A3A5C;--c-hero1:#132436;--c-hero2:#1A3A5C;
+  --c-badge-cow:#1A3A5C;--c-badge-cow-t:#5BBDE0;
+  --c-badge-bull:#1C3020;--c-badge-bull-t:#4ACC88;
+  --c-badge-calf:#2A1A3A;--c-badge-calf-t:#AA88CC;
+}
+[data-theme="forest"]{
+  --c-primary:#2D5A27;--c-primary-dk:#1E3E1A;--c-gold:#8AB840;
+  --c-bg:#F0F4EC;--c-text:#1A2E16;--c-surface:#FAFDF8;--c-surface2:#E4EDE0;
+  --c-border:#7AAA60;--c-muted:#5A7A50;--c-light:#F0F4EC;
+  --c-avi:#C8DDB8;--c-hero1:#FAFDF8;--c-hero2:#C8DDB8;
+  --c-badge-cow:#C8DDB8;--c-badge-cow-t:#2D5A27;
+  --c-badge-bull:#D4E8CC;--c-badge-bull-t:#1E3E1A;
+  --c-badge-calf:#E4F0DA;--c-badge-calf-t:#3A7A30;
+}
+[data-theme="slate"]{
+  --c-primary:#334E68;--c-primary-dk:#1F3346;--c-gold:#8BAFC1;
+  --c-bg:#F0F4F8;--c-text:#1A2A38;--c-surface:#FAFCFE;--c-surface2:#E0E8F0;
+  --c-border:#8BAFC1;--c-muted:#5A7A90;--c-light:#F0F4F8;
+  --c-avi:#C0D4E8;--c-hero1:#FAFCFE;--c-hero2:#C0D4E8;
+  --c-badge-cow:#C0D4E8;--c-badge-cow-t:#334E68;
+  --c-badge-bull:#D8E8F0;--c-badge-bull-t:#1F3346;
+  --c-badge-calf:#DDE8F4;--c-badge-calf-t:#2A4A68;
+}
+[data-theme="crimson"]{
+  --c-primary:#8B0000;--c-primary-dk:#600000;--c-gold:#CC8844;
+  --c-bg:#FDF4F0;--c-text:#2A0A0A;--c-surface:#FFF8F6;--c-surface2:#F0DDD8;
+  --c-border:#CC8844;--c-muted:#8A5050;--c-light:#FDF4F0;
+  --c-avi:#F0CCBC;--c-hero1:#FFF8F6;--c-hero2:#F0CCBC;
+  --c-badge-cow:#F0CCBC;--c-badge-cow-t:#8B0000;
+  --c-badge-bull:#E8D4CC;--c-badge-bull-t:#600000;
+  --c-badge-calf:#F8E0D4;--c-badge-calf-t:#8B2020;
+}
+
+/* Settings panel */
+#settingsPanel{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:500;align-items:flex-end;justify-content:center;}
+#settingsPanel.open{display:flex;}
+#settingsBox{background:var(--c-surface);border-radius:16px 16px 0 0;width:100%;max-width:520px;padding:0 0 30px;max-height:90vh;overflow-y:auto;}
+.settings-handle{width:40px;height:4px;background:var(--c-border);border-radius:2px;margin:12px auto 0;}
+.settings-head{padding:16px 18px 12px;border-bottom:1px solid var(--c-border);display:flex;justify-content:space-between;align-items:center;}
+.settings-head h2{font-size:1rem;color:var(--c-text);}
+.settings-sec{padding:18px 18px 0;}
+.settings-sec-label{font-size:0.62rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--c-muted);margin-bottom:12px;display:block;font-weight:bold;}
+.theme-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:4px;}
+.theme-sw{border:2px solid transparent;border-radius:10px;padding:8px 4px 6px;cursor:pointer;text-align:center;}
+.theme-sw.active{border-color:var(--c-primary);}
+.theme-sw .sw-bar{height:24px;border-radius:5px;margin-bottom:5px;}
+.theme-sw .sw-lbl{font-size:0.58rem;color:var(--c-muted);}
+.icon-pick{padding:7px 10px;font-size:1.3rem;border:2px solid transparent;border-radius:7px;background:var(--c-surface2);cursor:pointer;transition:border-color 0.1s;}
+.icon-pick:active,.icon-pick.selected{border-color:var(--c-primary);}
+.brand-btn{border:2px solid transparent;border-radius:8px;background:var(--c-surface2);cursor:pointer;padding:8px;display:flex;align-items:center;justify-content:center;}
+.brand-btn:active,.brand-btn.selected{border-color:var(--c-primary);background:var(--c-surface);}
+
+
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Georgia,serif;background:#F5ECD7;color:#2C1A0E;min-height:100vh;}
+body{font-family:Georgia,serif;background:var(--c-bg);color:var(--c-text);min-height:100vh;}
 .page{display:none;} .page.on{display:block;}
 
-.topbar{background:#A0440A;color:#F5ECD7;padding:13px 16px;display:flex;align-items:center;gap:10px;border-bottom:3px solid #D4A84B;position:sticky;top:0;z-index:20;}
+.topbar{background:var(--c-primary);color:var(--c-light);padding:13px 16px;display:flex;align-items:center;gap:10px;border-bottom:3px solid var(--c-gold);position:sticky;top:0;z-index:20;}
 .topbar h1{font-size:1.15rem;flex:1;}
-.back-btn{background:rgba(255,255,255,0.2);color:#F5ECD7;border:none;border-radius:6px;padding:8px 14px;font-size:1rem;cursor:pointer;font-family:Georgia,serif;white-space:nowrap;}
+.back-btn{background:rgba(255,255,255,0.2);color:var(--c-light);border:none;border-radius:6px;padding:8px 14px;font-size:1rem;cursor:pointer;font-family:Georgia,serif;white-space:nowrap;}
 
-.stats-bar{display:flex;background:#7B3A10;padding:7px 14px;}
+.stats-bar{display:flex;background:var(--c-primary-dk);padding:7px 14px;}
 .stat{text-align:center;flex:1;}
-.stat .n{font-size:1.1rem;font-weight:bold;color:#D4A84B;display:block;}
-.stat .l{font-size:0.6rem;color:#F5ECD7;text-transform:uppercase;letter-spacing:0.08em;}
+.stat .n{font-size:1.1rem;font-weight:bold;color:var(--c-gold);display:block;}
+.stat .l{font-size:0.6rem;color:var(--c-light);text-transform:uppercase;letter-spacing:0.08em;}
 
-.add-wrap{padding:11px 14px;background:#F0E4C8;border-bottom:1px solid #C9A96E;}
-.add-btn{display:block;width:100%;padding:14px;background:#A0440A;color:white;text-align:center;font-size:1rem;font-family:Georgia,serif;border:none;border-radius:8px;cursor:pointer;}
+.add-wrap{padding:11px 14px;background:var(--c-surface2);border-bottom:1px solid var(--c-border);}
+.add-btn{display:block;width:100%;padding:14px;background:var(--c-primary);color:white;text-align:center;font-size:1rem;font-family:Georgia,serif;border:none;border-radius:8px;cursor:pointer;}
 
-.tabs{display:flex;background:#F0E4C8;border-bottom:2px solid #C9A96E;}
-.tab-btn{flex:1;padding:12px 4px;border:none;background:none;font-size:0.82rem;font-family:Georgia,serif;cursor:pointer;color:#8C7A60;border-bottom:3px solid transparent;margin-bottom:-2px;}
-.tab-btn.on{color:#A0440A;border-bottom-color:#A0440A;font-weight:bold;}
+.tabs{display:flex;background:var(--c-surface2);border-bottom:2px solid var(--c-border);}
+.tab-btn{flex:1;padding:12px 4px;border:none;background:none;font-size:0.82rem;font-family:Georgia,serif;cursor:pointer;color:var(--c-muted);border-bottom:3px solid transparent;margin-bottom:-2px;}
+.tab-btn.on{color:var(--c-primary);border-bottom-color:var(--c-primary);font-weight:bold;}
 
-.filter-bar{background:#F0E4C8;border-bottom:1px solid #C9A96E;}
-.filter-toggle{width:100%;padding:10px 14px;background:none;border:none;font-family:Georgia,serif;font-size:0.85rem;color:#7B3A10;cursor:pointer;text-align:left;display:flex;align-items:center;justify-content:space-between;}
+.filter-bar{background:var(--c-surface2);border-bottom:1px solid var(--c-border);}
+.filter-toggle{width:100%;padding:10px 14px;background:none;border:none;font-family:Georgia,serif;font-size:0.85rem;color:var(--c-primary-dk);cursor:pointer;text-align:left;display:flex;align-items:center;justify-content:space-between;}
 .filter-toggle span{font-weight:bold;}
-.filter-panel{display:none;padding:12px 14px;border-top:1px solid #C9A96E55;background:#FDF6E8;}
+.filter-panel{display:none;padding:12px 14px;border-top:1px solid rgba(0,0,0,0.1);background:var(--c-surface);}
 .filter-panel.open{display:block;}
 .ff-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
 .ff{display:flex;flex-direction:column;gap:4px;}
 .ff label{font-size:0.63rem;text-transform:uppercase;letter-spacing:0.07em;color:#8C7A60;}
-.ff input,.ff select{padding:8px 10px;font-size:15px;font-family:Georgia,serif;border:1px solid #C9A96E;border-radius:6px;background:white;-webkit-appearance:none;appearance:none;color:#2C1A0E;}
+.ff input,.ff select{padding:8px 10px;font-size:15px;font-family:Georgia,serif;border:1px solid var(--c-border);border-radius:6px;background:white;-webkit-appearance:none;appearance:none;color:var(--c-text);}
 .sort-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;}
 .sort-row label{font-size:0.63rem;text-transform:uppercase;letter-spacing:0.07em;color:#8C7A60;white-space:nowrap;}
 .sort-row select{flex:1;padding:8px 10px;font-size:15px;font-family:Georgia,serif;border:1px solid #C9A96E;border-radius:6px;background:white;-webkit-appearance:none;appearance:none;color:#2C1A0E;}
 .filter-btns{display:flex;gap:8px;}
-.filter-apply-btn{flex:1;padding:10px;background:#A0440A;color:white;border:none;border-radius:6px;font-family:Georgia,serif;font-size:0.85rem;cursor:pointer;}
+.filter-apply-btn{flex:1;padding:10px;background:var(--c-primary);color:white;border:none;border-radius:6px;font-family:Georgia,serif;font-size:0.85rem;cursor:pointer;}
 .filter-clear-btn{padding:10px 16px;background:none;border:1px solid #C9A96E;color:#8C7A60;border-radius:6px;font-family:Georgia,serif;font-size:0.85rem;cursor:pointer;}
 .active-filters{padding:6px 14px;background:#FDF0D0;border-bottom:1px solid #C9A96E;font-size:0.72rem;color:#7B3A10;display:none;}
 .active-filters.on{display:block;}
@@ -47,26 +124,26 @@ body{font-family:Georgia,serif;background:#F5ECD7;color:#2C1A0E;min-height:100vh
 .search-bar{padding:9px 14px;background:#F0E4C8;border-bottom:1px solid #C9A96E;}
 .search-bar input{width:100%;padding:10px 12px;font-size:16px;border:1px solid #C9A96E;border-radius:6px;background:white;font-family:Georgia,serif;}
 
-.animal-row{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #C9A96E44;background:#FDF6E8;cursor:pointer;min-height:62px;}
-.animal-row:active{background:#EDD89A;}
-.avi{font-size:1.7rem;width:46px;height:46px;background:#EDD89A;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.animal-row{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--c-border);background:var(--c-surface);cursor:pointer;min-height:62px;}
+.animal-row:active{background:var(--c-avi);}
+.avi{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
 .ainfo{flex:1;min-width:0;}
-.atag{font-size:1rem;font-weight:bold;color:#2C1A0E;}
-.ameta{font-size:0.7rem;color:#8C7A60;margin-top:2px;}
+.atag{font-size:1rem;font-weight:bold;color:var(--c-text);}
+.ameta{font-size:0.7rem;color:var(--c-muted);margin-top:2px;}
 .abadge{font-size:0.62rem;padding:3px 9px;border-radius:10px;margin-left:auto;flex-shrink:0;}
-.bc{background:#EDD89A;color:#7B4A00;} .bb{background:#C9D4E8;color:#2A3C6E;} .bk{background:#D4EAC8;color:#2E5A20;}
-.achev{color:#C9A96E;font-size:1.1rem;flex-shrink:0;margin-left:2px;}
-.empty{padding:50px 20px;text-align:center;color:#8C7A60;font-style:italic;font-size:0.95rem;line-height:1.8;}
+.bc{background:var(--c-badge-cow);color:var(--c-badge-cow-t);} .bb{background:var(--c-badge-bull);color:var(--c-badge-bull-t);} .bk{background:var(--c-badge-calf);color:var(--c-badge-calf-t);}
+.achev{color:var(--c-border);font-size:1.1rem;flex-shrink:0;margin-left:2px;}
+.empty{padding:50px 20px;text-align:center;color:var(--c-muted);font-style:italic;font-size:0.95rem;line-height:1.8;}
 
 /* PROFILE */
-.profile-page{padding:16px 16px 30px;}
-.hero{background:linear-gradient(135deg,#FDF6E8,#EDD89A);border:2px solid #C9A96E;border-radius:12px;padding:16px;margin-bottom:13px;display:flex;align-items:flex-start;gap:12px;}
-.hero-avi{font-size:2.6rem;width:64px;height:64px;background:#F5ECD7;border:2px solid #C9A96E;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.profile-page{padding:16px 16px 30px;background:var(--c-bg);}
+.hero{background:linear-gradient(135deg,var(--c-hero1),var(--c-hero2));border:2px solid var(--c-border);border-radius:12px;padding:16px;margin-bottom:13px;display:flex;align-items:flex-start;gap:12px;}
+.hero-avi{width:68px;height:68px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
 .hero-info{flex:1;min-width:0;}
-.hero-tag{font-size:1.4rem;color:#7B3A10;font-weight:bold;}
+.hero-tag{font-size:1.4rem;color:var(--c-primary-dk);font-weight:bold;}
 .hero-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
 .htag{font-size:0.6rem;padding:3px 9px;border-radius:10px;border:1px solid;}
-.ht1{background:#EDD89A;color:#7B4A00;border-color:#C9A96E;}
+.ht1{background:var(--c-badge-cow);color:var(--c-badge-cow-t);border-color:var(--c-border);}
 .ht2{background:#F5ECD7;color:#8C7A60;border-color:#C9A96E;}
 .ht3{background:#D4EAC8;color:#2E5A20;border-color:#A0C898;}
 .ht4{background:#C9D4E8;color:#2A3C6E;border-color:#8BAFC1;}
@@ -78,8 +155,8 @@ body{font-family:Georgia,serif;background:#F5ECD7;color:#2C1A0E;min-height:100vh
 .edit-btn{background:#D4A84B;color:#2C1A0E;}
 .del-btn{background:transparent;color:#C0392B;border:1px solid #C0392B;}
 
-.card{background:#FDF6E8;border:1px solid #C9A96E;border-radius:10px;padding:15px;margin-bottom:13px;}
-.card h3{font-size:0.66rem;letter-spacing:0.12em;text-transform:uppercase;color:#A0440A;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid #C9A96E;}
+.card{background:var(--c-surface);border:1px solid var(--c-border);border-radius:10px;padding:15px;margin-bottom:13px;}
+.card h3{font-size:0.66rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--c-primary);margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid #C9A96E;}
 .drow{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px dotted #C9A96E55;gap:10px;}
 .drow:last-child{border-bottom:none;}
 .dk{font-size:0.69rem;color:#8C7A60;flex-shrink:0;}
@@ -99,7 +176,7 @@ body{font-family:Georgia,serif;background:#F5ECD7;color:#2C1A0E;min-height:100vh
 .cc-noprofile{font-size:0.62rem;color:#8C7A60;border:1px dashed #A0C898;padding:2px 7px;border-radius:8px;white-space:nowrap;flex-shrink:0;}
 .cc-chev{color:#A0C898;font-size:1.1rem;flex-shrink:0;}
 
-.add-calf-link-btn{display:block;width:100%;margin-top:8px;padding:11px;background:#EFF7EA;border:2px dashed #A0C898;color:#6B7C5C;border-radius:7px;font-size:0.82rem;font-family:Georgia,serif;cursor:pointer;text-align:center;}
+.add-calf-link-btn{display:block;width:100%;margin-top:8px;padding:11px;background:var(--c-badge-calf);border:2px dashed var(--c-badge-calf-t);color:var(--c-badge-calf-t);border-radius:7px;font-size:0.82rem;font-family:Georgia,serif;cursor:pointer;text-align:center;}
 .notes-text{font-style:italic;color:#8C7A60;font-size:0.88rem;line-height:1.7;}
 
 /* CALF DETAIL MODAL */
@@ -108,7 +185,7 @@ body{font-family:Georgia,serif;background:#F5ECD7;color:#2C1A0E;min-height:100vh
 .calf-modal{background:#FDF6E8;border:2px solid #C9A96E;border-radius:16px 16px 0 0;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding:0 0 24px;}
 .cm-handle{width:40px;height:4px;background:#C9A96E;border-radius:2px;margin:12px auto 0;}
 .cm-header{background:linear-gradient(135deg,#EFF7EA,#D4EAC8);padding:16px 18px 14px;border-bottom:1px solid #A0C898;display:flex;align-items:center;gap:12px;}
-.cm-avi{font-size:2rem;width:52px;height:52px;background:#F5ECD7;border:2px solid #A0C898;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cm-avi{width:52px;height:52px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
 .cm-title{flex:1;}
 .cm-tag{font-size:1.2rem;font-weight:bold;color:#2E5A20;}
 .cm-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;}
@@ -151,10 +228,10 @@ body{font-family:Georgia,serif;background:#F5ECD7;color:#2C1A0E;min-height:100vh
 .fl:first-child{margin-top:0;}
 .fi{display:block;width:100%;padding:12px 13px;font-size:16px;font-family:Georgia,serif;border:1px solid #C9A96E;border-radius:7px;background:white;color:#2C1A0E;-webkit-appearance:none;appearance:none;}
 textarea.fi{min-height:88px;resize:vertical;}
-select.fi{background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘12’ height=‘8’ viewBox=‘0 0 12 8’%3E%3Cpath d=‘M1 1l5 5 5-5’ stroke=’%238C7A60’ stroke-width=‘1.5’ fill=‘none’ stroke-linecap=‘round’/%3E%3C/svg%3E”);background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238C7A60' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.form-footer{position:fixed;bottom:0;left:0;right:0;padding:11px 15px;background:#F0E4C8;border-top:1px solid #C9A96E;display:flex;gap:10px;z-index:100;}
-.save-btn{flex:1;padding:14px;background:#A0440A;color:white;border:none;border-radius:8px;font-size:0.95rem;font-family:Georgia,serif;cursor:pointer;}
+.form-footer{position:fixed;bottom:0;left:0;right:0;padding:11px 15px;background:var(--c-surface2);border-top:1px solid var(--c-border);display:flex;gap:10px;z-index:100;}
+.save-btn{flex:1;padding:14px;background:var(--c-primary);color:white;border:none;border-radius:8px;font-size:0.95rem;font-family:Georgia,serif;cursor:pointer;}
 .cancel-btn{padding:14px 18px;background:none;border:1px solid #C9A96E;color:#8C7A60;border-radius:8px;font-size:0.95rem;font-family:Georgia,serif;cursor:pointer;}
 .hidden{display:none!important;}
 /* Batch select checkbox in list rows */
@@ -165,16 +242,99 @@ select.fi{background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.
 /* Chart tooltip */
 #chartTip{position:fixed;background:#2C1A0E;color:#F5ECD7;padding:7px 13px;border-radius:8px;font-size:0.78rem;font-family:Georgia,serif;pointer-events:none;z-index:999;display:none;max-width:180px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,0.35);line-height:1.4;}
 </style>
-
 </head>
 <body>
 
 <div id="chartTip"></div>
 
 <!-- LIST -->
-
 <div class="page on" id="pgList">
-  <div class="topbar"><h1>🐂 Ranch Book</h1><button class="back-btn" onclick="goReports()" style="background:rgba(255,255,255,0.15);font-size:0.8rem;padding:7px 12px;">📊 Reports</button></div>
+  <div class="topbar"><h1 id="appTitle" style="display:flex;align-items:center;gap:8px;"><span id="titleIconEl" style="display:flex;align-items:center;line-height:1;">🐂</span><span id="titleTextEl">Ranch Book</span></h1><button class="back-btn" onclick="goReports()" style="background:rgba(255,255,255,0.15);font-size:0.8rem;padding:7px 12px;">📊 Reports</button><button class="back-btn" onclick="openSettings()" style="background:rgba(255,255,255,0.15);font-size:0.8rem;padding:7px 10px;">⚙</button></div>
+
+<!-- SETTINGS PANEL -->
+<div id="settingsPanel" onclick="if(event.target===this)closeSettings()">
+  <div id="settingsBox">
+    <div class="settings-handle"></div>
+    <div class="settings-head">
+      <h2>⚙ Settings</h2>
+      <button onclick="closeSettings()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--c-muted);">✕</button>
+    </div>
+    <div class="settings-sec">
+      <span class="settings-sec-label">App Title &amp; Icon</span>
+      <!-- Title text + preview -->
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
+        <div id="iconPreview" style="width:52px;height:52px;background:var(--c-surface2);border:1px solid var(--c-border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;overflow:hidden;"></div>
+        <input id="titleTextInput" type="text" maxlength="30" placeholder="Ranch Book" style="flex:1;padding:10px 12px;font-size:16px;font-family:Georgia,serif;border:1px solid var(--c-border);border-radius:7px;background:white;color:var(--c-text);">
+      </div>
+      <!-- Tabs: Emoji / Brands / Upload -->
+      <div style="display:flex;border-bottom:2px solid var(--c-border);margin-bottom:12px;">
+        <button onclick="switchIconTab('emoji')" id="itab-emoji" style="flex:1;padding:8px 4px;border:none;background:none;font-family:Georgia,serif;font-size:0.78rem;color:var(--c-primary);border-bottom:3px solid var(--c-primary);margin-bottom:-2px;cursor:pointer;font-weight:bold;">Emoji</button>
+        <button onclick="switchIconTab('brands')" id="itab-brands" style="flex:1;padding:8px 4px;border:none;background:none;font-family:Georgia,serif;font-size:0.78rem;color:var(--c-muted);border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer;">Brands</button>
+        <button onclick="switchIconTab('upload')" id="itab-upload" style="flex:1;padding:8px 4px;border:none;background:none;font-family:Georgia,serif;font-size:0.78rem;color:var(--c-muted);border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer;">Upload</button>
+      </div>
+      <!-- Emoji tab -->
+      <div id="iconTab-emoji">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+          <button onclick="previewIcon('🐂','emoji')" class="icon-pick">🐂</button>
+          <button onclick="previewIcon('🐄','emoji')" class="icon-pick">🐄</button>
+          <button onclick="previewIcon('🐮','emoji')" class="icon-pick">🐮</button>
+          <button onclick="previewIcon('🤠','emoji')" class="icon-pick">🤠</button>
+          <button onclick="previewIcon('🌾','emoji')" class="icon-pick">🌾</button>
+          <button onclick="previewIcon('⭐','emoji')" class="icon-pick">⭐</button>
+          <button onclick="previewIcon('🏡','emoji')" class="icon-pick">🏡</button>
+          <button onclick="previewIcon('🐎','emoji')" class="icon-pick">🐎</button>
+          <button onclick="previewIcon('🦬','emoji')" class="icon-pick">🦬</button>
+          <button onclick="previewIcon('🌵','emoji')" class="icon-pick">🌵</button>
+          <button onclick="previewIcon('⛰️','emoji')" class="icon-pick">⛰️</button>
+          <button onclick="previewIcon('🔱','emoji')" class="icon-pick">🔱</button>
+        </div>
+      </div>
+      <!-- Brands tab -->
+      <div id="iconTab-brands" style="display:none;">
+        <div style="font-size:0.7rem;color:var(--c-muted);margin-bottom:10px;">Traditional cattle brand symbols — tap to select</div>
+        <div id="brandGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;"></div>
+      </div>
+      <!-- Upload tab -->
+      <div id="iconTab-upload" style="display:none;">
+        <div style="font-size:0.7rem;color:var(--c-muted);margin-bottom:10px;">Upload a PNG, JPG, or SVG. Square images work best.</div>
+        <label style="display:block;padding:18px;border:2px dashed var(--c-border);border-radius:8px;text-align:center;cursor:pointer;color:var(--c-muted);font-size:0.85rem;font-family:Georgia,serif;">
+          📁 Tap to choose image
+          <input type="file" id="iconUploadInput" accept="image/png,image/jpeg,image/svg+xml" onchange="handleIconUpload(event)" style="display:none;">
+        </label>
+        <div id="uploadPreviewWrap" style="display:none;margin-top:10px;text-align:center;">
+          <img id="uploadPreviewImg" style="max-width:80px;max-height:80px;border-radius:8px;border:1px solid var(--c-border);">
+          <div style="font-size:0.72rem;color:var(--c-muted);margin-top:6px;">Looks good! Hit Apply to save.</div>
+        </div>
+      </div>
+      <button onclick="applyTitle()" style="display:block;width:100%;padding:12px;background:var(--c-primary);color:white;border:none;border-radius:7px;font-family:Georgia,serif;font-size:0.9rem;cursor:pointer;margin-top:14px;">Apply Title &amp; Icon</button>
+    </div>
+    <div class="settings-sec" style="margin-top:20px;">
+      <span class="settings-sec-label">Theme</span>
+      <div class="theme-grid" id="themeGrid">
+        <div class="theme-sw active" onclick="applyTheme('')" id="sw-classic">
+          <div class="sw-bar" style="background:linear-gradient(135deg,#A0440A,#D4A84B);"></div>
+          <div class="sw-lbl">Classic</div>
+        </div>
+        <div class="theme-sw" onclick="applyTheme('midnight')" id="sw-midnight">
+          <div class="sw-bar" style="background:linear-gradient(135deg,#1A6B8A,#0D1B2A);"></div>
+          <div class="sw-lbl">Midnight</div>
+        </div>
+        <div class="theme-sw" onclick="applyTheme('forest')" id="sw-forest">
+          <div class="sw-bar" style="background:linear-gradient(135deg,#2D5A27,#8AB840);"></div>
+          <div class="sw-lbl">Forest</div>
+        </div>
+        <div class="theme-sw" onclick="applyTheme('slate')" id="sw-slate">
+          <div class="sw-bar" style="background:linear-gradient(135deg,#334E68,#8BAFC1);"></div>
+          <div class="sw-lbl">Slate</div>
+        </div>
+        <div class="theme-sw" onclick="applyTheme('crimson')" id="sw-crimson">
+          <div class="sw-bar" style="background:linear-gradient(135deg,#8B0000,#CC8844);"></div>
+          <div class="sw-lbl">Crimson</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
   <div class="stats-bar">
     <div class="stat"><span class="n" id="stC">0</span><span class="l">Cows</span></div>
     <div class="stat"><span class="n" id="stB">0</span><span class="l">Bulls</span></div>
@@ -319,7 +479,6 @@ select.fi{background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.
 </div>
 
 <!-- PROFILE -->
-
 <div class="page" id="pgProf">
   <div class="topbar">
     <button class="back-btn" onclick="goList()">‹ Back</button>
@@ -329,7 +488,6 @@ select.fi{background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.
 </div>
 
 <!-- FORM -->
-
 <div class="page" id="pgForm">
   <div class="topbar">
     <button class="back-btn" onclick="goBack()">‹ Back</button>
@@ -337,159 +495,157 @@ select.fi{background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.
   </div>
   <div class="form-page">
 
-```
-<div class="fsec">
-  <span class="fsec-label">Animal Type</span>
-  <div class="type-row">
-    <button class="tybtn tycow" id="tbC" onclick="setType('cow')"><span class="ti" id="tiCow"></span>Cow</button>
-    <button class="tybtn" id="tbB" onclick="setType('bull')"><span class="ti" id="tiBull"></span>Bull</button>
-    <button class="tybtn" id="tbK" onclick="setType('calf')"><span class="ti" id="tiCalf"></span>Calf</button>
-  </div>
-  <input type="hidden" id="fType" value="cow">
-</div>
-
-<div class="fsec">
-  <span class="fsec-label">Identity</span>
-  <label class="fl">Tag / Ear # ★ Primary ID</label>
-  <input class="fi" type="text" id="fTag2" placeholder="e.g. #4472" autocomplete="off">
-  <div id="fBreedWrap">
-  <label class="fl">Breed</label>
-  <select class="fi" id="fBreed" onchange="onCowBreedChange()">
-    <option value="">— Select Breed —</option>
-    <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
-    <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
-    <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
-    <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
-    <option value="Crossbred">Crossbred / Mixed ▼ specify below</option>
-    <option value="Other">Other</option>
-  </select>
-  <!-- Shown only when Crossbred is selected -->
-  <div id="fCowCrossWrap" class="hidden">
-    <div style="background:#F0E8F8;border:1px solid #B48ACC;border-radius:8px;padding:12px;margin-top:10px;">
-      <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:#5A2080;margin-bottom:10px;font-weight:bold;">Specify Cross Parentage</div>
-      <div class="two">
-        <div>
-          <label class="fl" style="color:#5A2080;">Her Sire (Father) Breed</label>
-          <select class="fi" id="fCowSireBreed" onchange="updateCowCrossLabel()">
-            <option value="">— Unknown —</option>
-            <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
-            <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
-            <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
-            <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-        <div>
-          <label class="fl" style="color:#5A2080;">Her Dam (Mother) Breed</label>
-          <select class="fi" id="fCowDamBreed" onchange="updateCowCrossLabel()">
-            <option value="">— Unknown —</option>
-            <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
-            <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
-            <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
-            <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
+    <div class="fsec">
+      <span class="fsec-label">Animal Type</span>
+      <div class="type-row">
+        <button class="tybtn tycow" id="tbC" onclick="setType('cow')"><span class="ti" id="tiCow"></span>Cow</button>
+        <button class="tybtn" id="tbB" onclick="setType('bull')"><span class="ti" id="tiBull"></span>Bull</button>
+        <button class="tybtn" id="tbK" onclick="setType('calf')"><span class="ti" id="tiCalf"></span>Calf</button>
       </div>
-      <div id="fCowCrossPreview" style="margin-top:8px;display:none;background:white;border:1px solid #B48ACC;border-radius:6px;padding:8px 12px;font-size:0.85rem;color:#5A2080;text-align:center;font-weight:bold;"></div>
+      <input type="hidden" id="fType" value="cow">
     </div>
-  </div>
-  </div>
-  <label class="fl">Color / Markings</label>
-  <input class="fi" type="text" id="fColor" placeholder="e.g. Black with white face" autocomplete="off">
-</div>
 
-<div class="fsec">
-  <span class="fsec-label">Age &amp; Dates</span>
-  <div class="two">
-    <div><label class="fl">Date of Birth</label><input class="fi" type="date" id="fDob"></div>
-    <div><label class="fl">Age (if no DOB)</label><input class="fi" type="text" id="fAge" placeholder="e.g. 3 years" autocomplete="off"></div>
-  </div>
-  <div class="two">
-    <div><label class="fl">Acquired Date</label><input class="fi" type="date" id="fAcq"></div>
-    <div><label class="fl">Status</label>
-      <select class="fi" id="fStat" onchange="onStatusChange()">
-        <option value="active">Active / In Herd</option>
-        <option value="breeding">Breeding Stock</option>
-        <option value="sold">Sold</option>
-        <option value="deceased">Deceased</option>
-      </select>
-    </div>
-  </div>
-  <div id="fSoldReasonWrap" class="hidden">
-    <label class="fl">Sold To / Reason for Sale</label>
-    <input class="fi" type="text" id="fSoldReason" placeholder="e.g. John Smith Ranch, sold at auction…" autocomplete="off">
-    <label class="fl">Sale Date</label>
-    <input class="fi" type="date" id="fSoldDate">
-  </div>
-</div>
-
-<!-- Pregnancy: cows only -->
-<div class="fsec" id="fPregSec">
-  <span class="fsec-label">Pregnancy Status</span>
-  <div class="preg-row">
-    <button class="preg-btn" id="pbOpen" onclick="setPreg('open')"><span class="pi">🔵</span>Open</button>
-    <button class="preg-btn preg-pregnant" id="pbPreg" onclick="setPreg('pregnant')"><span class="pi">🟢</span>Pregnant</button>
-    <button class="preg-btn preg-unk" id="pbUnk" onclick="setPreg('unknown')"><span class="pi">⚪</span>Unknown</button>
-  </div>
-  <input type="hidden" id="fPreg" value="unknown">
-  <div id="fCalvingWrap" class="hidden">
-    <label class="fl">Expected Calving Date</label>
-    <input class="fi" type="date" id="fCalving">
-  </div>
-</div>
-
-<div class="fsec">
-  <span class="fsec-label">Physical Details</span>
-  <div class="two">
-    <div><label class="fl">Weight (lbs)</label><input class="fi" type="number" id="fWt" placeholder="1200" inputmode="numeric"></div>
-    <div><label class="fl">Body Condition (1–9)</label><input class="fi" type="number" id="fBCS" min="1" max="9" placeholder="5" inputmode="numeric"></div>
-  </div>
-</div>
-
-<div class="fsec">
-  <span class="fsec-label">Parentage</span>
-  <div class="two">
-    <div><label class="fl">Sire (Father) Tag #</label><input class="fi" type="text" id="fSire" placeholder="e.g. #1012" autocomplete="off"></div>
-    <div><label class="fl">Sire Breed</label>
-      <select class="fi" id="fSireBreed" onchange="updateCrossLabel()">
-        <option value="">— Unknown —</option>
+    <div class="fsec">
+      <span class="fsec-label">Identity</span>
+      <label class="fl">Tag / Ear # ★ Primary ID</label>
+      <input class="fi" type="text" id="fTag2" placeholder="e.g. #4472" autocomplete="off">
+      <div id="fBreedWrap">
+      <label class="fl">Breed</label>
+      <select class="fi" id="fBreed" onchange="onCowBreedChange()">
+        <option value="">— Select Breed —</option>
         <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
         <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
         <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
         <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
-        <option value="Crossbred">Crossbred</option><option value="Other">Other</option>
+        <option value="Crossbred">Crossbred / Mixed ▼ specify below</option>
+        <option value="Other">Other</option>
+      </select>
+      <!-- Shown only when Crossbred is selected -->
+      <div id="fCowCrossWrap" class="hidden">
+        <div style="background:#F0E8F8;border:1px solid #B48ACC;border-radius:8px;padding:12px;margin-top:10px;">
+          <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:#5A2080;margin-bottom:10px;font-weight:bold;">Specify Cross Parentage</div>
+          <div class="two">
+            <div>
+              <label class="fl" style="color:#5A2080;">Her Sire (Father) Breed</label>
+              <select class="fi" id="fCowSireBreed" onchange="updateCowCrossLabel()">
+                <option value="">— Unknown —</option>
+                <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
+                <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
+                <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
+                <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="fl" style="color:#5A2080;">Her Dam (Mother) Breed</label>
+              <select class="fi" id="fCowDamBreed" onchange="updateCowCrossLabel()">
+                <option value="">— Unknown —</option>
+                <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
+                <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
+                <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
+                <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div id="fCowCrossPreview" style="margin-top:8px;display:none;background:white;border:1px solid #B48ACC;border-radius:6px;padding:8px 12px;font-size:0.85rem;color:#5A2080;text-align:center;font-weight:bold;"></div>
+        </div>
+      </div>
+      </div>
+      <label class="fl">Color / Markings</label>
+      <input class="fi" type="text" id="fColor" placeholder="e.g. Black with white face" autocomplete="off">
+    </div>
+
+    <div class="fsec">
+      <span class="fsec-label">Age &amp; Dates</span>
+      <div class="two">
+        <div><label class="fl">Date of Birth</label><input class="fi" type="date" id="fDob"></div>
+        <div><label class="fl">Age (if no DOB)</label><input class="fi" type="text" id="fAge" placeholder="e.g. 3 years" autocomplete="off"></div>
+      </div>
+      <div class="two">
+        <div><label class="fl">Acquired Date</label><input class="fi" type="date" id="fAcq"></div>
+        <div><label class="fl">Status</label>
+          <select class="fi" id="fStat" onchange="onStatusChange()">
+            <option value="active">Active / In Herd</option>
+            <option value="breeding">Breeding Stock</option>
+            <option value="sold">Sold</option>
+            <option value="deceased">Deceased</option>
+          </select>
+        </div>
+      </div>
+      <div id="fSoldReasonWrap" class="hidden">
+        <label class="fl">Sold To / Reason for Sale</label>
+        <input class="fi" type="text" id="fSoldReason" placeholder="e.g. John Smith Ranch, sold at auction…" autocomplete="off">
+        <label class="fl">Sale Date</label>
+        <input class="fi" type="date" id="fSoldDate">
+      </div>
+    </div>
+
+    <!-- Pregnancy: cows only -->
+    <div class="fsec" id="fPregSec">
+      <span class="fsec-label">Pregnancy Status</span>
+      <div class="preg-row">
+        <button class="preg-btn" id="pbOpen" onclick="setPreg('open')"><span class="pi">🔵</span>Open</button>
+        <button class="preg-btn preg-pregnant" id="pbPreg" onclick="setPreg('pregnant')"><span class="pi">🟢</span>Pregnant</button>
+        <button class="preg-btn preg-unk" id="pbUnk" onclick="setPreg('unknown')"><span class="pi">⚪</span>Unknown</button>
+      </div>
+      <input type="hidden" id="fPreg" value="unknown">
+      <div id="fCalvingWrap" class="hidden">
+        <label class="fl">Expected Calving Date</label>
+        <input class="fi" type="date" id="fCalving">
+      </div>
+    </div>
+
+    <div class="fsec">
+      <span class="fsec-label">Physical Details</span>
+      <div class="two">
+        <div><label class="fl">Weight (lbs)</label><input class="fi" type="number" id="fWt" placeholder="1200" inputmode="numeric"></div>
+        <div><label class="fl">Body Condition (1–9)</label><input class="fi" type="number" id="fBCS" min="1" max="9" placeholder="5" inputmode="numeric"></div>
+      </div>
+    </div>
+
+    <div class="fsec">
+      <span class="fsec-label">Parentage</span>
+      <div class="two">
+        <div><label class="fl">Sire (Father) Tag #</label><input class="fi" type="text" id="fSire" placeholder="e.g. #1012" autocomplete="off"></div>
+        <div><label class="fl">Sire Breed</label>
+          <select class="fi" id="fSireBreed" onchange="updateCrossLabel()">
+            <option value="">— Unknown —</option>
+            <option>Angus</option><option>Hereford</option><option>Simmental</option><option>Charolais</option>
+            <option>Limousin</option><option>Shorthorn</option><option>Brangus</option><option>Brahman</option>
+            <option>Red Angus</option><option>Longhorn</option><option>Gelbvieh</option><option>Beefmaster</option>
+            <option>Santa Gertrudis</option><option>Salers</option><option>Piedmontese</option><option>Murray Grey</option>
+            <option value="Crossbred">Crossbred</option><option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="fl">Dam (Mother)</label>
+      <div id="damFieldWrap"></div>
+      <div id="crossLabelPreview" class="cross-label-preview"></div>
+    </div>
+
+    <!-- Sex: calves only -->
+    <div class="fsec hidden" id="fSexSec">
+      <span class="fsec-label">Sex of Calf</span>
+      <select class="fi" id="fSex">
+        <option value="heifer">♀ Heifer (Female)</option>
+        <option value="bull-calf">♂ Bull Calf (Male)</option>
+        <option value="steer">♂ Steer (Castrated)</option>
       </select>
     </div>
-  </div>
 
-  <label class="fl">Dam (Mother)</label>
-  <div id="damFieldWrap"></div>
-  <div id="crossLabelPreview" class="cross-label-preview"></div>
-</div>
+    <!-- Calves: cows only -->
+    <div class="fsec hidden" id="fCalSec">
+      <span class="fsec-label">Calves Born</span>
+      <div id="fCalList"></div>
+      <button class="add-calf-link-btn" onclick="addCalfRow()">+ Add Calf Record</button>
+    </div>
 
-<!-- Sex: calves only -->
-<div class="fsec hidden" id="fSexSec">
-  <span class="fsec-label">Sex of Calf</span>
-  <select class="fi" id="fSex">
-    <option value="heifer">♀ Heifer (Female)</option>
-    <option value="bull-calf">♂ Bull Calf (Male)</option>
-    <option value="steer">♂ Steer (Castrated)</option>
-  </select>
-</div>
-
-<!-- Calves: cows only -->
-<div class="fsec hidden" id="fCalSec">
-  <span class="fsec-label">Calves Born</span>
-  <div id="fCalList"></div>
-  <button class="add-calf-link-btn" onclick="addCalfRow()">+ Add Calf Record</button>
-</div>
-
-<div class="fsec">
-  <span class="fsec-label">Notes</span>
-  <textarea class="fi" id="fNotes" placeholder="Health history, vaccinations, temperament, breeding notes…"></textarea>
-</div>
-```
+    <div class="fsec">
+      <span class="fsec-label">Notes</span>
+      <textarea class="fi" id="fNotes" placeholder="Health history, vaccinations, temperament, breeding notes…"></textarea>
+    </div>
 
   </div>
   <div class="form-footer">
@@ -499,7 +655,6 @@ select.fi{background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.
 </div>
 
 <!-- CALF DETAIL MODAL (slides up from bottom) -->
-
 <div class="modal-overlay" id="calfModal" onclick="handleModalTap(event)">
   <div class="calf-modal" id="calfModalBox">
     <div class="cm-handle"></div>
@@ -516,7 +671,6 @@ select.fi{background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.
 </div>
 
 <!-- REPORTS PAGE -->
-
 <div class="page" id="pgReports">
   <div class="topbar">
     <button class="back-btn" onclick="goList()">‹ Back</button>
@@ -587,6 +741,27 @@ function resolveCalfBreed(a){
 function sv(){try{localStorage.setItem('rb8',JSON.stringify(A));}catch(e){}}
 function uid(){return 'a'+Date.now()+Math.floor(Math.random()*9999);}
 // Emoji icons
+function earTag(type, tag){
+  // Colors by type
+  var bg=type==='bull'?'#8BAFC1':type==='calf'?'#A0C898':'#D4A84B';
+  var txt=type==='bull'?'#1A3050':type==='calf'?'#1A4020':'#5A3000';
+  var border=type==='bull'?'#5A8AAA':type==='calf'?'#6A9060':'#A07820';
+  // Shorten tag for display — strip leading # and spaces, max 4 chars
+  var label=(tag||'?').replace(/^[#\s]+/,'');
+  if(label.length>5) label=label.slice(-4);
+  var fs=label.length<=3?11:label.length===4?9:7;
+  return '<svg viewBox="0 0 44 44" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">'+
+    // Tag hole at top
+    '<circle cx="22" cy="5" r="3.5" fill="'+border+'"/>'+
+    '<circle cx="22" cy="5" r="2" fill="#eee"/>'+
+    // Tag body — rounded rectangle like a real ear tag
+    '<rect x="4" y="8" width="36" height="32" rx="6" ry="6" fill="'+bg+'" stroke="'+border+'" stroke-width="1.5"/>'+
+    // Subtle shine
+    '<rect x="7" y="11" width="14" height="4" rx="2" fill="white" opacity="0.25"/>'+
+    // Tag number text
+    '<text x="22" y="29" text-anchor="middle" font-family="Georgia,serif" font-size="'+fs+'" font-weight="bold" fill="'+txt+'">'+label+'</text>'+
+  '</svg>';
+}
 function emo(t){return t==='bull'?'🐂':t==='calf'?'🐮':'🐄';}
 function calcAge(dob){
   if(!dob)return null;
@@ -722,9 +897,9 @@ function rl(){
       var bc=a.type==='cow'?'bc':a.type==='bull'?'bb':'bk';
       var isSold=a.status==='sold';
       if(isSold){
-        html+='<div class="animal-row" id="ar_'+a.id+'" data-id="'+a.id+'" onclick="handleRowClick(event,\''+a.id+'\')" oncontextmenu="enterSelectMode(event,\''+a.id+'\')" style="background:#EDE0CC;opacity:0.55;">'+'<div class="row-cb" id="cb_'+a.id+'"></div>'+'<div class="avi" style="filter:grayscale(1);">'+emo(a.type)+'</div>'+'<div class="ainfo">'+'<div class="atag" style="text-decoration:line-through;color:#8C7A60;">'+(a.tag||'No Tag #')+'</div>'+'<div class="ameta">'+(breedDisplay||'—')+'</div>'+'</div>'+'<span class="abadge" style="background:#999;color:white;border-color:#999;">sold</span>'+'<span class="achev">›</span>'+'</div>';
+        html+='<div class="animal-row" id="ar_'+a.id+'" data-id="'+a.id+'" onclick="handleRowClick(event,\''+a.id+'\')" oncontextmenu="enterSelectMode(event,\''+a.id+'\')" style="background:#EDE0CC;opacity:0.55;">'+'<div class="row-cb" id="cb_'+a.id+'"></div>'+'<div class="avi" style="filter:grayscale(1);">'+earTag(a.type,a.tag)+'</div>'+'<div class="ainfo">'+'<div class="atag" style="text-decoration:line-through;color:#8C7A60;">'+(a.tag||'No Tag #')+'</div>'+'<div class="ameta">'+(breedDisplay||'—')+'</div>'+'</div>'+'<span class="abadge" style="background:#999;color:white;border-color:#999;">sold</span>'+'<span class="achev">›</span>'+'</div>';
       } else {
-        html+='<div class="animal-row" id="ar_'+a.id+'" data-id="'+a.id+'" onclick="handleRowClick(event,\''+a.id+'\')" oncontextmenu="enterSelectMode(event,\''+a.id+'\')">'+'<div class="row-cb" id="cb_'+a.id+'"></div>'+'<div class="avi">'+emo(a.type)+'</div>'+'<div class="ainfo">'+'<div class="atag">'+(a.tag||'No Tag #')+'</div>'+'<div class="ameta">'+(meta||'—')+'</div>'+(a.expectedCalving&&ps==='pregnant'?'<div class="ameta" style="color:#6B7C5C">📅 Due: '+fmtDate(a.expectedCalving)+'</div>':'')+
+        html+='<div class="animal-row" id="ar_'+a.id+'" data-id="'+a.id+'" onclick="handleRowClick(event,\''+a.id+'\')" oncontextmenu="enterSelectMode(event,\''+a.id+'\')">'+'<div class="row-cb" id="cb_'+a.id+'"></div>'+'<div class="avi">'+earTag(a.type,a.tag)+'</div>'+'<div class="ainfo">'+'<div class="atag">'+(a.tag||'No Tag #')+'</div>'+'<div class="ameta">'+(meta||'—')+'</div>'+(a.expectedCalving&&ps==='pregnant'?'<div class="ameta" style="color:#6B7C5C">📅 Due: '+fmtDate(a.expectedCalving)+'</div>':'')+
           '</div>'+
           '<span class="abadge '+bc+'">'+a.type+'</span>'+
           '<span class="achev">›</span>'+
@@ -819,7 +994,7 @@ function goProf(id){
   document.getElementById('pBody').innerHTML=
     (a.status==='sold'?'<div style="background:#C0392B;color:white;text-align:center;font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;padding:7px;font-family:Georgia,serif;font-weight:bold;">● SOLD' + (a.soldDate?' — '+fmtDate(a.soldDate):'') + '</div>':'')+
     '<div class="hero" style="'+(a.status==='sold'?'opacity:0.6;filter:grayscale(0.4);':'')+'">'+
-      '<div class="hero-avi">'+emo(a.type)+'</div>'+
+      '<div class="hero-avi">'+earTag(a.type,a.tag)+'</div>'+
       '<div class="hero-info">'+
         '<div class="hero-tag">'+(a.tag||'No Tag #')+'</div>'+
         '<div class="hero-tags">'+
@@ -888,7 +1063,7 @@ function openCalfDetail(cowId, calfIndex){
   var modalCross=c.crossLabel||(sb2&&db2?crossLabel(sb2,db2):null);
   var modalCrossFull=sb2&&db2?crossLabelFull(sb2,db2):modalCross;
 
-  document.getElementById('cmAvi').textContent='🐮';
+  document.getElementById('cmAvi').innerHTML=earTag('calf',c.tag||'?');
   document.getElementById('cmTag').textContent=cTag;
 
   // Tags row
@@ -1555,12 +1730,196 @@ function saveQuickAdd(){
   showFilterToast('✓ Calf '+tag+' saved!');
 }
 
+// ── SETTINGS: THEME & TITLE ───────────────────────────────────────────────
+
+// Cattle brand SVG library — traditional Western brand symbols
+var BRANDS=[
+  {id:'lazy-s',  name:'Lazy S',    svg:'<path d="M8,20 Q20,8 32,20 Q44,32 56,20" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/>'},
+  {id:'rocking', name:'Rocking',   svg:'<path d="M20,36 Q32,12 44,36" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M14,38 Q32,42 50,38" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/>'},
+  {id:'flying-u',name:'Flying U',  svg:'<path d="M16,14 L16,34 Q32,46 48,34 L48,14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M10,12 L22,12 M42,12 L54,12" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/>'},
+  {id:'bar-s',   name:'Bar S',     svg:'<line x1="14" y1="24" x2="50" y2="24" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M26,14 Q38,14 38,20 Q38,26 26,26 Q38,26 38,32 Q38,38 26,38" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/>'},
+  {id:'circle-c',name:'Circle C',  svg:'<circle cx="32" cy="28" r="16" stroke="currentColor" stroke-width="4" fill="none"/><path d="M32,20 Q24,24 26,32 Q28,38 36,38" stroke="currentColor" stroke-width="3.5" fill="none" stroke-linecap="round"/>'},
+  {id:'diamond', name:'Diamond',   svg:'<polygon points="32,10 50,28 32,46 14,28" stroke="currentColor" stroke-width="3.5" fill="none" stroke-linejoin="round"/>'},
+  {id:'anchor',  name:'Anchor',    svg:'<circle cx="32" cy="18" r="6" stroke="currentColor" stroke-width="3.5" fill="none"/><line x1="32" y1="24" x2="32" y2="44" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><path d="M20,38 Q26,44 32,44 Q38,44 44,38" stroke="currentColor" stroke-width="3.5" fill="none" stroke-linecap="round"/><line x1="20" y1="32" x2="44" y2="32" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>'},
+  {id:'star',    name:'Star',      svg:'<polygon points="32,10 36,24 50,24 39,33 43,47 32,38 21,47 25,33 14,24 28,24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linejoin="round"/>'},
+  {id:'cross',   name:'Cross',     svg:'<line x1="32" y1="10" x2="32" y2="46" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><line x1="14" y1="28" x2="50" y2="28" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>'},
+  {id:'arrow-r', name:'Arrow',     svg:'<path d="M14,28 L44,28 M36,18 L46,28 L36,38" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'},
+  {id:'running', name:'Running',   svg:'<path d="M12,36 Q20,16 32,20 Q44,24 52,14" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M12,38 L52,38" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>'},
+  {id:'tumbling',name:'Tumbling',  svg:'<rect x="18" y="18" width="28" height="20" rx="2" stroke="currentColor" stroke-width="3.5" fill="none" transform="rotate(20,32,28)"/>'},
+  {id:'lazy-l',  name:'Lazy L',    svg:'<path d="M16,18 Q32,36 48,18" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/>'},
+  {id:'quarter', name:'Quarter C', svg:'<path d="M48,28 Q48,12 32,12 Q16,12 16,28 Q16,44 32,44" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/>'},
+  {id:'hat',     name:'Hat',       svg:'<path d="M16,36 L48,36 L44,24 L38,22 L32,16 L26,22 L20,24 Z" stroke="currentColor" stroke-width="3" fill="none" stroke-linejoin="round"/><line x1="12" y1="38" x2="52" y2="38" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>'},
+];
+
+var _pendingIcon=null; // {type:'emoji'|'brand'|'image', value:'...'}
+
+function makeBrandSvg(brand, size, color){
+  size=size||64; color=color||'currentColor';
+  return '<svg viewBox="0 0 64 56" width="'+size+'" height="'+size+'" xmlns="http://www.w3.org/2000/svg" style="color:'+color+';">'+brand.svg+'</svg>';
+}
+
+function openSettings(){
+  var panel=document.getElementById('settingsPanel');
+  panel.classList.add('open');
+  var saved=JSON.parse(localStorage.getItem('rb8_settings')||'{}');
+  document.getElementById('titleTextInput').value=saved.title||'Ranch Book';
+  // Build brand grid
+  var grid=document.getElementById('brandGrid');
+  if(grid&&!grid.children.length){
+    BRANDS.forEach(function(b){
+      var btn=document.createElement('button');
+      btn.className='brand-btn';
+      btn.id='brand-btn-'+b.id;
+      btn.title=b.name;
+      btn.innerHTML=makeBrandSvg(b,36,'#A0440A');
+      btn.onclick=function(){previewIcon(b.id,'brand');};
+      grid.appendChild(btn);
+    });
+  }
+  // Restore current icon preview
+  _pendingIcon=null;
+  var iconEl=document.getElementById('iconPreview');
+  if(saved.iconType==='image'&&saved.iconData){
+    iconEl.innerHTML='<img src="'+saved.iconData+'" style="width:44px;height:44px;object-fit:contain;">';
+  } else if(saved.iconType==='brand'&&saved.iconId){
+    var b=BRANDS.find(function(x){return x.id===saved.iconId;});
+    iconEl.innerHTML=b?makeBrandSvg(b,44,'var(--c-primary)'):'';
+  } else {
+    iconEl.innerHTML='<span style="font-size:1.6rem;">'+(saved.icon||'🐂')+'</span>';
+  }
+  // Restore theme swatches
+  var cur=saved.theme||'';
+  document.querySelectorAll('.theme-sw').forEach(function(sw){sw.classList.remove('active');});
+  var activeSw=document.getElementById('sw-'+(cur||'classic'));
+  if(activeSw)activeSw.classList.add('active');
+  switchIconTab('emoji');
+}
+
+function closeSettings(){
+  document.getElementById('settingsPanel').classList.remove('open');
+}
+
+function switchIconTab(tab){
+  ['emoji','brands','upload'].forEach(function(t){
+    var el=document.getElementById('iconTab-'+t);
+    var btn=document.getElementById('itab-'+t);
+    if(el)el.style.display=(t===tab?'block':'none');
+    if(btn){
+      btn.style.color=t===tab?'var(--c-primary)':'var(--c-muted)';
+      btn.style.borderBottomColor=t===tab?'var(--c-primary)':'transparent';
+      btn.style.fontWeight=t===tab?'bold':'normal';
+    }
+  });
+}
+
+function previewIcon(value, type){
+  _pendingIcon={type:type,value:value};
+  var iconEl=document.getElementById('iconPreview');
+  // Clear selection highlights
+  document.querySelectorAll('.icon-pick').forEach(function(b){b.classList.remove('selected');});
+  document.querySelectorAll('.brand-btn').forEach(function(b){b.classList.remove('selected');});
+  if(type==='emoji'){
+    iconEl.innerHTML='<span style="font-size:1.6rem;">'+value+'</span>';
+    // Highlight selected emoji button
+    var btns=document.querySelectorAll('.icon-pick');
+    btns.forEach(function(b){if(b.textContent===value)b.classList.add('selected');});
+  } else if(type==='brand'){
+    var b=BRANDS.find(function(x){return x.id===value;});
+    if(b){
+      iconEl.innerHTML=makeBrandSvg(b,44,'var(--c-primary)');
+      var bb=document.getElementById('brand-btn-'+value);
+      if(bb)bb.classList.add('selected');
+    }
+  }
+}
+
+function handleIconUpload(e){
+  var file=e.target.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var data=ev.target.result;
+    _pendingIcon={type:'image',value:data};
+    document.getElementById('iconPreview').innerHTML='<img src="'+data+'" style="width:44px;height:44px;object-fit:contain;">';
+    var wrap=document.getElementById('uploadPreviewWrap');
+    var img=document.getElementById('uploadPreviewImg');
+    if(wrap)wrap.style.display='block';
+    if(img)img.src=data;
+  };
+  reader.readAsDataURL(file);
+}
+
+function applyTitle(){
+  var title=document.getElementById('titleTextInput').value.trim()||'Ranch Book';
+  var saved=JSON.parse(localStorage.getItem('rb8_settings')||'{}');
+  // Apply pending icon if any
+  if(_pendingIcon){
+    if(_pendingIcon.type==='emoji'){
+      saved.iconType='emoji'; saved.icon=_pendingIcon.value;
+      delete saved.iconData; delete saved.iconId;
+    } else if(_pendingIcon.type==='brand'){
+      saved.iconType='brand'; saved.iconId=_pendingIcon.value;
+      delete saved.iconData; delete saved.icon;
+    } else if(_pendingIcon.type==='image'){
+      saved.iconType='image'; saved.iconData=_pendingIcon.value;
+      delete saved.icon; delete saved.iconId;
+    }
+  }
+  saved.title=title;
+  localStorage.setItem('rb8_settings',JSON.stringify(saved));
+  renderTitle(saved);
+  closeSettings();
+}
+
+function renderTitle(saved){
+  var iconEl=document.getElementById('titleIconEl');
+  var textEl=document.getElementById('titleTextEl');
+  if(textEl)textEl.textContent=saved.title||'Ranch Book';
+  document.title=saved.title||'Ranch Book';
+  if(!iconEl)return;
+  if(saved.iconType==='image'&&saved.iconData){
+    iconEl.innerHTML='<img src="'+saved.iconData+'" style="height:28px;width:28px;object-fit:contain;vertical-align:middle;">';
+  } else if(saved.iconType==='brand'&&saved.iconId){
+    var b=BRANDS.find(function(x){return x.id===saved.iconId;});
+    iconEl.innerHTML=b?makeBrandSvg(b,28,'white'):'🐂';
+  } else {
+    iconEl.textContent=saved.icon||'🐂';
+  }
+}
+
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme',theme);
+  document.querySelectorAll('.theme-sw').forEach(function(sw){sw.classList.remove('active');});
+  var sw=document.getElementById('sw-'+(theme||'classic'));
+  if(sw)sw.classList.add('active');
+  saveSettings({theme:theme});
+}
+
+function saveSettings(updates){
+  var saved=JSON.parse(localStorage.getItem('rb8_settings')||'{}');
+  Object.keys(updates).forEach(function(k){saved[k]=updates[k];});
+  localStorage.setItem('rb8_settings',JSON.stringify(saved));
+}
+
+function loadSettings(){
+  var saved=JSON.parse(localStorage.getItem('rb8_settings')||'{}');
+  if(saved.theme!==undefined)document.documentElement.setAttribute('data-theme',saved.theme||'');
+  renderTitle(saved);
+}
+
+function setTitleIcon(icon){
+  previewIcon(icon,'emoji');
+}
+
 rl();
 
 // Set emoji icons in type selector buttons
 document.getElementById('tiCow').textContent='🐄';
 document.getElementById('tiBull').textContent='🐂';
 document.getElementById('tiCalf').textContent='🐮';
+
+// Load saved theme and title
+loadSettings();
 
 // ---- REPORTS DASHBOARD ----
 function goReports(){sp('pgReports');renderReports();}
@@ -2317,19 +2676,14 @@ function exportSectionPdf(key){
       'svg{display:block;margin:8px auto;}'+
       '@media print{body{margin:16px;} button{display:none!important;}}'+
     '</style></head><body>'+
-
-```
-'<h1>🐂 Ranch Book — '+title+'</h1>'+
-'<p class="meta">Generated '+dateStr+' &nbsp;·&nbsp; '+A.length+' animals on record</p>'+
-cardHtml+
-'<script>window.onload=function(){window.print();}<\/script>'+
-'</body></html>'
-```
-
-);
-win.document.close();
+    '<h1>🐂 Ranch Book — '+title+'</h1>'+
+    '<p class="meta">Generated '+dateStr+' &nbsp;·&nbsp; '+A.length+' animals on record</p>'+
+    cardHtml+
+    '<script>window.onload=function(){window.print();}<\/script>'+
+    '</body></html>'
+  );
+  win.document.close();
 }
 </script>
-
 </body>
 </html>
