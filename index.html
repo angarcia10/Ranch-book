@@ -7642,36 +7642,21 @@ if (document.readyState === 'loading') {
 }
 
 </script>
-     
+
 <script type="module">
 /* ===========================================================================
    RANCH BOOK — CLOUD (Firebase Auth + Firestore)
 
-   HOW TO INSTALL — one paste, no changes anywhere else in index.html.
+   This block lives at the bottom of index.html inside a module script tag,
+   after the app's own script has closed. Module scripts are deferred, so this
+   runs once the whole app is defined but before startApp() fires — exactly
+   when it can take over saveHerd().
 
-   Find the very end of the file:
-
-       }
-
-       </script>
-       </body>
-       </html>
-
-   and insert this between the closing </script> and </body>, wrapped in its
-   own module script tag:
-
-       </script>
-
-       <script type="module">
-       ... everything in this file ...
-       </script>
-
-       </body>
-
-   It must be type="module", and it must come after the existing </script>.
-   Module scripts are deferred, so this runs after your whole app has been
-   defined but before startApp() fires — which is exactly when it can take
-   over saveHerd().
+   IMPORTANT, AND THE REASON THIS COMMENT NO LONGER SHOWS THE TAGS:
+   a comment inside a script must never contain the characters that close a
+   script tag. An HTML parser ends the script at the first one it sees, even
+   inside a JavaScript comment, and everything after it spills onto the page as
+   plain text. So: no closing script tags written out anywhere in this file.
 
    WHAT IT TOUCHES
      · wraps  saveHerd()   so every save also pushes changed animals up
@@ -7683,8 +7668,6 @@ if (document.readyState === 'loading') {
 
    Note: type="module" does not run from a file:// URL. Test on the GitHub
    Pages URL, or run `python3 -m http.server` and open http://localhost:8000.
-
-   ONE THING TO FILL IN — the config block below.
    =========================================================================== */
 
 import { initializeApp }
