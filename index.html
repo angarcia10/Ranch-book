@@ -7642,5 +7642,646 @@ if (document.readyState === 'loading') {
 }
 
 </script>
+     
+<script type="module">
+/* ===========================================================================
+   RANCH BOOK — CLOUD (Firebase Auth + Firestore)
+
+   HOW TO INSTALL — one paste, no changes anywhere else in index.html.
+
+   Find the very end of the file:
+
+       }
+
+       </script>
+       </body>
+       </html>
+
+   and insert this between the closing </script> and </body>, wrapped in its
+   own module script tag:
+
+       </script>
+
+       <script type="module">
+       ... everything in this file ...
+       </script>
+
+       </body>
+
+   It must be type="module", and it must come after the existing </script>.
+   Module scripts are deferred, so this runs after your whole app has been
+   defined but before startApp() fires — which is exactly when it can take
+   over saveHerd().
+
+   WHAT IT TOUCHES
+     · wraps  saveHerd()   so every save also pushes changed animals up
+     · fills  HERD         from Firestore when data arrives, then refreshAll()
+     · adds   a sign-in screen, injected into the page by this script
+     · adds   a "Ranch crew" section into the existing Settings sheet
+   Nothing else. The on-device localStorage copy keeps working as before and
+   remains the offline cache, so the app is unchanged with no signal.
+
+   Note: type="module" does not run from a file:// URL. Test on the GitHub
+   Pages URL, or run `python3 -m http.server` and open http://localhost:8000.
+
+   ONE THING TO FILL IN — the config block below.
+   =========================================================================== */
+
+import { initializeApp }
+  from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js';
+import {
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  signOut, onAuthStateChanged, sendPasswordResetEmail
+} from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js';
+import {
+  initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+  collection, doc, setDoc, deleteDoc, getDoc, onSnapshot,
+  serverTimestamp, writeBatch
+} from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js';
+
+
+/* === YOUR FIREBASE PROJECT ===============================================
+   Project: ranch-app-e992a
+   This block is not a secret and is meant to sit in public HTML. What keeps
+   other people out of the herd is firestore.rules, not this.               */
+const firebaseConfig = {
+  apiKey:            'AIzaSyAvV1IzyF0BIGraaM_WGzjO5VMfdX6nzdI',
+  authDomain:        'ranch-app-e992a.firebaseapp.com',
+  projectId:         'ranch-app-e992a',
+  storageBucket:     'ranch-app-e992a.firebasestorage.app',
+  messagingSenderId: '496976705380',
+  appId:             '1:496976705380:web:5b7f10b53d51ce8a72ec71'
+};
+/* ========================================================================= */
+
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+/* persistentLocalCache is what makes this offline-first. Reads come from an
+   on-disk copy, writes queue on disk and flush when signal returns, and the
+   queue survives closing the app. No hand-rolled sync engine. */
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+});
+
+const S = { ranchId: null, role: null, ranchName: '', firstSnap: true, unsub: null };
+
+/* Last version of each animal we know the cloud has, keyed by id. Used to
+   push only what actually changed instead of the whole herd every save. */
+let shadow = {};
+
+/* The app's own save function, before we wrap it. Called directly whenever we
+   want to update the on-device copy WITHOUT pushing back up. */
+const localSave = window.saveHerd;
+
+
+/* === SMALL HELPERS ======================================================= */
+
+function say(msg, kind) {
+  if (typeof window.toast === 'function') window.toast(msg, kind ? { kind: kind } : undefined);
+}
+
+/* Firebase error codes are not fit to show a rancher. */
+function plain(err) {
+  const c = (err && err.code) || '';
+  if (c === 'auth/invalid-credential' ||
+      c === 'auth/wrong-password' ||
+      c === 'auth/user-not-found')          return 'That email and password do not match an account.';
+  if (c === 'auth/email-already-in-use')    return 'There is already an account for that email. Sign in instead.';
+  if (c === 'auth/invalid-email')           return 'That does not look like an email address.';
+  if (c === 'auth/weak-password')           return 'Use a password of at least six characters.';
+  if (c === 'auth/too-many-requests')       return 'Too many tries. Wait a few minutes and try again.';
+  if (c === 'auth/network-request-failed')  return 'No connection. The app still works offline.';
+  if (c === 'permission-denied')            return 'This account is not a member of that ranch.';
+  if (c === 'unavailable')                  return 'No connection. Changes are saved here and will sync later.';
+  return (err && err.message) || 'Something went wrong.';
+}
+
+function makeJoinCode() {
+  /* No I, O, 0 or 1 — these get read aloud across a corral. */
+  const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let out = '';
+  for (let i = 0; i < 8; i++) out += abc[Math.floor(Math.random() * abc.length)];
+  return out;
+}
+
+function animalsRef() {
+  return collection(db, 'ranches', S.ranchId, 'animals');
+}
+
+/* Strip the two bookkeeping fields so they never reach HERD, localStorage,
+   backups or the shadow comparison. serverTimestamp() comes back as an object
+   that would otherwise churn on every sync. */
+function clean(raw, id) {
+  const a = Object.assign({}, raw);
+  delete a.updatedAt;
+  delete a.updatedBy;
+  a.id = id;
+  return a;
+}
+
+function reshadow() {
+  shadow = {};
+  window.HERD.forEach(function (a) { shadow[a.id] = JSON.stringify(a); });
+}
+
+/* Nothing may touch HERD until startApp() has called loadHerd(). Otherwise a
+   snapshot arriving early would compare against an empty herd and conclude
+   the device has nothing worth keeping. */
+let appReady = document.readyState !== 'loading';
+const waiting = [];
+function whenAppReady(fn) {
+  if (appReady) fn();
+  else waiting.push(fn);
+}
+
+
+/* === PUSHING CHANGES UP ==================================================
+   Diffing against the shadow means the 15 existing saveHerd() call sites need
+   no changes at all: whatever they changed, we notice.                      */
+
+function pushChanges() {
+  if (!S.ranchId || !auth.currentUser) return;
+  const me = auth.currentUser.uid;
+  const seen = {};
+
+  window.HERD.forEach(function (a) {
+    if (!a || !a.id) return;
+    seen[a.id] = true;
+    const json = JSON.stringify(a);
+    if (shadow[a.id] === json) return;          /* unchanged, nothing to do */
+    shadow[a.id] = json;
+    setDoc(
+      doc(animalsRef(), a.id),
+      Object.assign({}, a, { updatedBy: me, updatedAt: serverTimestamp() })
+    ).catch(function (e) { say('Could not sync: ' + plain(e), 'danger'); });
+  });
+
+  /* Anything we had that is no longer in HERD was deleted locally. */
+  Object.keys(shadow).forEach(function (id) {
+    if (seen[id]) return;
+    delete shadow[id];
+    deleteDoc(doc(animalsRef(), id))
+      .catch(function (e) { say('Could not sync a deletion: ' + plain(e), 'danger'); });
+  });
+}
+
+/* Wrap the app's save. The device copy is written first, exactly as before, so
+   a cloud problem can never cost a local save. */
+window.saveHerd = function () {
+  const ok = localSave.apply(this, arguments);
+  try { pushChanges(); } catch (e) { say('Could not sync: ' + plain(e), 'danger'); }
+  return ok;
+};
+
+
+/* === PULLING CHANGES DOWN ================================================ */
+
+function subscribe() {
+  whenAppReady(startSubscription);
+}
+
+function startSubscription() {
+  if (S.unsub) { S.unsub(); S.unsub = null; }
+  S.firstSnap = true;
+
+  /* Belt and braces: if the herd somehow isn't in memory yet, read it off the
+     device before comparing anything against the cloud. */
+  if (!window.HERD.length && typeof window.loadHerd === 'function') window.loadHerd();
+
+  S.unsub = onSnapshot(animalsRef(),
+    function (snap) {
+      /* FIRST SYNC, THE DANGEROUS ONE. A brand new ranch is empty. If we
+         blindly copied that down we would erase a herd that only exists on
+         this phone. So: never let an empty cloud overwrite a local herd. */
+      if (S.firstSnap) {
+        S.firstSnap = false;
+        if (snap.empty && window.HERD.length) {
+          window.askConfirm({
+            title: 'Upload this herd?',
+            body: window.HERD.length + ' animals are saved on this device, and this ranch ' +
+                  'has nothing in it yet. Upload them so the whole crew can see them?',
+            confirmLabel: 'Upload'
+          }).then(function (yes) {
+            if (yes) uploadAll();
+            else say('Nothing uploaded. Your herd is still saved on this device.');
+          });
+          return;
+        }
+      }
+
+      const rows = snap.docs.map(function (d) {
+        const a = clean(d.data(), d.id);
+        return window.upgradeAnimal ? window.upgradeAnimal(a) : a;
+      });
+
+      /* Mutate in place — other parts of the app hold on to HERD. */
+      window.HERD.length = 0;
+      rows.forEach(function (r) { window.HERD.push(r); });
+
+      reshadow();
+      localSave();            /* keep the offline copy in step, no push back */
+      if (typeof window.refreshAll === 'function') window.refreshAll();
+      paintCloudSection();
+    },
+    function (err) { say('Sync paused: ' + plain(err), 'warn'); }
+  );
+}
+
+/* First-time upload of whatever is already on this device. */
+async function uploadAll() {
+  const me = auth.currentUser.uid;
+  let batch = writeBatch(db), n = 0, inBatch = 0;
+
+  for (const a of window.HERD) {
+    if (!a || !a.id) continue;
+    batch.set(doc(animalsRef(), a.id),
+              Object.assign({}, a, { updatedBy: me, updatedAt: serverTimestamp() }));
+    n++; inBatch++;
+    if (inBatch === 400) { await batch.commit(); batch = writeBatch(db); inBatch = 0; }
+  }
+  if (inBatch) await batch.commit();
+
+  reshadow();
+  say(n + ' animals uploaded.', 'ok');
+}
+
+
+/* === AUTH ================================================================ */
+
+async function createRanch(email, password, ranchName) {
+  const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
+  const me = cred.user.uid;
+  const ranchId  = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const joinCode = makeJoinCode();
+
+  const batch = writeBatch(db);
+  batch.set(doc(db, 'ranches', ranchId), {
+    name: (ranchName || '').trim() || 'My Ranch',
+    ownerUid: me, joinCode: joinCode, createdAt: serverTimestamp()
+  });
+  batch.set(doc(db, 'ranches', ranchId, 'members', me), {
+    email: cred.user.email, role: 'owner', joinedAt: serverTimestamp()
+  });
+  batch.set(doc(db, 'users', me), { email: cred.user.email, ranchId: ranchId });
+  await batch.commit();
+}
+
+/* Invite strings look like  r1a2b3c4d:PQRS7T9K  — ranch id, colon, join code.
+   Rules deny listing ranches, so the id has to travel with the code. */
+async function joinRanch(email, password, invite) {
+  const parts = String(invite || '').trim().split(':');
+  if (parts.length !== 2 || !parts[0] || !parts[1]) {
+    throw new Error('That invite code is not the right shape. It should look like r1a2b3c4:PQRS7T9K');
+  }
+  const ranchId = parts[0].trim();
+  const code    = parts[1].trim().toUpperCase();
+
+  let cred;
+  try {
+    cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
+  } catch (e) {
+    if (e.code !== 'auth/email-already-in-use') throw e;
+    cred = await signInWithEmailAndPassword(auth, email.trim(), password);
+  }
+  const me = cred.user.uid;
+
+  const snap = await getDoc(doc(db, 'ranches', ranchId));
+  if (!snap.exists()) throw new Error('No ranch found for that invite code.');
+  if (snap.data().joinCode !== code) throw new Error('That invite code is wrong or has been replaced.');
+
+  await setDoc(doc(db, 'ranches', ranchId, 'members', me), {
+    email: cred.user.email, role: 'hand', joinCode: code, joinedAt: serverTimestamp()
+  });
+  await setDoc(doc(db, 'users', me), { email: cred.user.email, ranchId: ranchId });
+}
+
+async function rollJoinCode() {
+  const code = makeJoinCode();
+  await setDoc(doc(db, 'ranches', S.ranchId), { joinCode: code }, { merge: true });
+  say('New invite code made. The old one no longer works.', 'ok');
+  paintCloudSection();
+}
+
+async function leave() {
+  if (S.unsub) { S.unsub(); S.unsub = null; }
+  await signOut(auth);
+  S.ranchId = null; S.role = null; S.ranchName = ''; shadow = {};
+  if (typeof window.loadHerd === 'function') window.loadHerd();
+  if (typeof window.refreshAll === 'function') window.refreshAll();
+  showGate(true);
+}
+
+
+/* === THE SIGN-IN SCREEN ==================================================
+   Injected from here so index.html needs no edits. Uses only classes and CSS
+   variables that already exist, so all four themes reach it.               */
+
+const GATE_ID = 'cloudGate';
+
+function buildGate() {
+  if (document.getElementById(GATE_ID)) return;
+
+  const el = document.createElement('div');
+  el.id = GATE_ID;
+  el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-modal', 'true');
+  el.setAttribute('aria-label', 'Sign in');
+  el.style.cssText =
+    'position:fixed;inset:0;z-index:9000;background:var(--bg);overflow-y:auto;' +
+    'display:none;padding:var(--s-5);';
+
+  el.innerHTML =
+    '<div style="max-width:26rem;margin:0 auto;padding-top:var(--s-7)">' +
+
+      '<div style="text-align:center;margin-bottom:var(--s-6)">' +
+        '<div style="display:inline-flex;width:3.5rem;height:3.5rem;align-items:center;' +
+             'justify-content:center;border-radius:var(--r-3);background:var(--primary-soft);' +
+             'color:var(--primary);margin-bottom:var(--s-3)"><span class="i-database"></span></div>' +
+        '<h2 style="font-size:var(--fs-xl);color:var(--text);margin:0">Ranch Book</h2>' +
+        '<p class="small" style="color:var(--text-2);margin-top:var(--s-2)">' +
+          'Sign in so your herd follows you between devices and your crew can see it too.</p>' +
+      '</div>' +
+
+      /* three tabs, reusing the icon-tab look from Settings */
+      '<div class="icon-tabs" role="tablist" style="margin-bottom:var(--s-4)">' +
+        '<button type="button" class="icon-tab" role="tab" data-mode="in"   aria-selected="true">Sign in</button>' +
+        '<button type="button" class="icon-tab" role="tab" data-mode="new"  aria-selected="false">New ranch</button>' +
+        '<button type="button" class="icon-tab" role="tab" data-mode="join" aria-selected="false">Join</button>' +
+      '</div>' +
+
+      '<div style="background:var(--surface);border:1px solid var(--border);' +
+           'border-radius:var(--r-3);padding:var(--s-4);box-shadow:var(--sh-1)">' +
+
+        '<p class="small" id="cgBlurb" style="color:var(--text-2);margin:0 0 var(--s-3)"></p>' +
+
+        '<div id="cgRanchWrap" style="display:none;margin-bottom:var(--s-3)">' +
+          '<label class="fl" for="cgRanch">Ranch name</label>' +
+          '<input class="fi" type="text" id="cgRanch" maxlength="40" placeholder="Cross Creek Cattle" autocomplete="organization">' +
+        '</div>' +
+
+        '<div id="cgInviteWrap" style="display:none;margin-bottom:var(--s-3)">' +
+          '<label class="fl" for="cgInvite">Invite code</label>' +
+          '<input class="fi" type="text" id="cgInvite" placeholder="r1a2b3c4:PQRS7T9K" autocapitalize="characters" spellcheck="false">' +
+        '</div>' +
+
+        '<div style="margin-bottom:var(--s-3)">' +
+          '<label class="fl" for="cgEmail">Email</label>' +
+          '<input class="fi" type="email" id="cgEmail" autocomplete="email" spellcheck="false" inputmode="email">' +
+        '</div>' +
+
+        '<div style="margin-bottom:var(--s-3)">' +
+          '<label class="fl" for="cgPass">Password</label>' +
+          '<input class="fi" type="password" id="cgPass" autocomplete="current-password">' +
+        '</div>' +
+
+        '<p class="small" id="cgErr" role="alert" style="display:none;color:var(--danger);' +
+           'background:var(--danger-bg);border:1px solid var(--danger-br);border-radius:var(--r-2);' +
+           'padding:var(--s-2) var(--s-3);margin:0 0 var(--s-3)"></p>' +
+
+        '<button type="button" class="btn btn-primary btn-block" id="cgGo">Sign in</button>' +
+        '<button type="button" class="btn btn-secondary btn-block mt-2" id="cgForgot">Forgot password</button>' +
+      '</div>' +
+
+      '<p class="small" style="color:var(--text-3);text-align:center;margin-top:var(--s-4)">' +
+        'Once signed in, the app keeps working with no signal. Anything you enter ' +
+        'out of range syncs the next time you have bars.</p>' +
+
+    '</div>';
+
+  document.body.appendChild(el);
+
+  /* Let the app's own icon filler draw the placeholder span. */
+  if (typeof window.fillIconPlaceholders === 'function') window.fillIconPlaceholders();
+
+  let mode = 'in';
+  const q = function (id) { return document.getElementById(id); };
+
+  function setMode(next) {
+    mode = next;
+    el.querySelectorAll('.icon-tab').forEach(function (b) {
+      b.setAttribute('aria-selected', b.dataset.mode === next ? 'true' : 'false');
+    });
+    q('cgRanchWrap').style.display  = (next === 'new')  ? '' : 'none';
+    q('cgInviteWrap').style.display = (next === 'join') ? '' : 'none';
+    q('cgForgot').style.display     = (next === 'in')   ? '' : 'none';
+    q('cgPass').setAttribute('autocomplete', next === 'in' ? 'current-password' : 'new-password');
+    q('cgGo').textContent =
+      next === 'in' ? 'Sign in' : next === 'new' ? 'Create ranch' : 'Join ranch';
+    q('cgBlurb').textContent =
+      next === 'in'  ? 'Use the account you already made.'
+    : next === 'new' ? 'Start a new ranch. You become the owner and get an invite code to hand out.'
+    :                  'Paste the invite code the ranch owner gave you.';
+    fail('');
+  }
+
+  function fail(msg) {
+    const box = q('cgErr');
+    box.textContent = msg;                  /* textContent, so no escaping needed */
+    box.style.display = msg ? '' : 'none';
+  }
+
+  function busy(on) {
+    q('cgGo').disabled = on;
+    q('cgGo').textContent = on ? 'Working...'
+      : (mode === 'in' ? 'Sign in' : mode === 'new' ? 'Create ranch' : 'Join ranch');
+  }
+
+  el.querySelectorAll('.icon-tab').forEach(function (b) {
+    b.onclick = function () { setMode(b.dataset.mode); };
+  });
+
+  q('cgGo').onclick = async function () {
+    const email = q('cgEmail').value.trim();
+    const pass  = q('cgPass').value;
+    if (!email) return fail('Enter your email address.');
+    if (pass.length < 6) return fail('Enter a password of at least six characters.');
+
+    busy(true); fail('');
+    try {
+      if (mode === 'in')        await signInWithEmailAndPassword(auth, email, pass);
+      else if (mode === 'new')  await createRanch(email, pass, q('cgRanch').value);
+      else                      await joinRanch(email, pass, q('cgInvite').value);
+      q('cgPass').value = '';
+    } catch (e) {
+      fail(plain(e));
+    } finally {
+      busy(false);
+    }
+  };
+
+  q('cgForgot').onclick = async function () {
+    const email = q('cgEmail').value.trim();
+    if (!email) return fail('Enter your email address first, then tap this again.');
+    try {
+      await sendPasswordResetEmail(auth, email);
+      fail('');
+      say('A reset link is on its way to that address.', 'ok');
+    } catch (e) { fail(plain(e)); }
+  };
+
+  /* Enter key submits from any field. */
+  el.querySelectorAll('.fi').forEach(function (i) {
+    i.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); q('cgGo').click(); }
+    });
+  });
+
+  setMode('in');
+}
+
+function showGate(on) {
+  buildGate();
+  document.getElementById(GATE_ID).style.display = on ? '' : 'none';
+}
+
+
+/* === THE SETTINGS SECTION ================================================
+   Appended into the existing Settings sheet, right after "Your data".      */
+
+function buildCloudSection() {
+  if (document.getElementById('cloudSec')) return;
+  const sheet = document.querySelector('#settingsSheet .sheet');
+  if (!sheet) return;
+
+  const sec = document.createElement('div');
+  sec.className = 'set-sec';
+  sec.id = 'cloudSec';
+  sec.innerHTML =
+    '<span class="set-label">Ranch crew</span>' +
+    '<div id="cloudInfo"></div>';
+
+  const first = sheet.querySelector('.set-sec');
+  if (first && first.nextSibling) sheet.insertBefore(sec, first.nextSibling);
+  else sheet.appendChild(sec);
+}
+
+async function paintCloudSection() {
+  buildCloudSection();
+  const box = document.getElementById('cloudInfo');
+  if (!box || !auth.currentUser) return;
+
+  const esc = window.esc || function (v) { return String(v == null ? '' : v); };
+  let invite = '';
+  if (S.role === 'owner' && S.ranchId) {
+    try {
+      const snap = await getDoc(doc(db, 'ranches', S.ranchId));
+      if (snap.exists()) invite = S.ranchId + ':' + snap.data().joinCode;
+    } catch (e) { /* offline; just don't show the code */ }
+  }
+
+  box.innerHTML =
+    '<div class="kv"><span class="k">Signed in as</span>' +
+      '<span class="v">' + esc(auth.currentUser.email) + '</span></div>' +
+    '<div class="kv"><span class="k">Ranch</span>' +
+      '<span class="v">' + esc(S.ranchName || '—') + '</span></div>' +
+    '<div class="kv"><span class="k">Your role</span>' +
+      '<span class="v">' + (S.role === 'owner' ? 'Owner' : 'Ranch hand') + '</span></div>' +
+    '<div class="kv"><span class="k">Animals in the cloud</span>' +
+      '<span class="v">' + window.HERD.length + '</span></div>' +
+
+    (invite
+      ? '<p class="small mt-3" style="color:var(--text-2)">Give this code to anyone who ' +
+        'should see and edit this herd. They enter it on the Join tab when they sign up.</p>' +
+        '<div class="mt-2" style="font-family:var(--ff-mono,monospace);font-size:var(--fs-sm);' +
+             'background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-2);' +
+             'padding:var(--s-3);word-break:break-all;color:var(--text)">' + esc(invite) + '</div>' +
+        '<button type="button" class="btn btn-secondary btn-block mt-2" id="cloudCopy">Copy invite code</button>' +
+        '<button type="button" class="btn btn-secondary btn-block mt-2" id="cloudRoll">Make a new invite code</button>'
+      : '') +
+
+    '<button type="button" class="btn btn-secondary btn-block mt-3" id="cloudOut">Sign out</button>';
+
+  const copy = document.getElementById('cloudCopy');
+  if (copy) copy.onclick = function () {
+    navigator.clipboard.writeText(invite)
+      .then(function () { say('Invite code copied.', 'ok'); })
+      .catch(function () { say('Could not copy. Select the code and copy it by hand.'); });
+  };
+
+  const roll = document.getElementById('cloudRoll');
+  if (roll) roll.onclick = function () {
+    window.askConfirm({
+      title: 'Make a new invite code?',
+      body: 'Anyone already on the crew stays on. The old code stops working for new people.',
+      confirmLabel: 'Make new code'
+    }).then(function (yes) { if (yes) rollJoinCode().catch(function (e) { say(plain(e), 'danger'); }); });
+  };
+
+  document.getElementById('cloudOut').onclick = function () {
+    window.askConfirm({
+      title: 'Sign out?',
+      body: 'The herd stays saved on this device. You will need your password to sync again.',
+      confirmLabel: 'Sign out'
+    }).then(function (yes) { if (yes) leave(); });
+  };
+}
+
+
+/* === SESSION ============================================================= */
+
+onAuthStateChanged(auth, async function (user) {
+  if (!user) { showGate(true); return; }
+
+  try {
+    const prof = await getDoc(doc(db, 'users', user.uid));
+    S.ranchId = prof.exists() ? prof.data().ranchId : null;
+
+    if (!S.ranchId) {
+      showGate(true);
+      say('That account is not attached to a ranch yet.', 'warn');
+      return;
+    }
+
+    const [me, ranch] = await Promise.all([
+      getDoc(doc(db, 'ranches', S.ranchId, 'members', user.uid)),
+      getDoc(doc(db, 'ranches', S.ranchId))
+    ]);
+    S.role      = me.exists() ? me.data().role : null;
+    S.ranchName = ranch.exists() ? (ranch.data().name || '') : '';
+
+    showGate(false);
+    subscribe();
+    paintCloudSection();
+  } catch (e) {
+    /* Offline on a cold start: the cached session is still good, so let them
+       in and work from the on-device copy until signal returns. */
+    showGate(false);
+    if (S.ranchId) subscribe();
+    say(plain(e), 'warn');
+  }
+});
+
+/* Runs after the app's own DOMContentLoaded handler, so startApp() has already
+   drawn the herd screen by the time we cover it. */
+window.addEventListener('DOMContentLoaded', function () {
+  appReady = true;
+  buildGate();
+  buildCloudSection();
+  if (!auth.currentUser) showGate(true);
+  waiting.splice(0).forEach(function (fn) { fn(); });
+});
+
+/* Repaint the crew section whenever Settings is opened. */
+if (typeof window.openSettings === 'function') {
+  const openSettingsBefore = window.openSettings;
+  window.openSettings = function () {
+    openSettingsBefore.apply(this, arguments);
+    paintCloudSection();
+  };
+}
+
+/* A small handle for the console, and for anything you add later. */
+window.RBCloud = {
+  get user()    { return auth.currentUser; },
+  get ranchId() { return S.ranchId; },
+  get role()    { return S.role; },
+  get isOwner() { return S.role === 'owner'; },
+  uploadAll: uploadAll,
+  signOut: leave
+};
+</script>
+
 </body>
 </html>
