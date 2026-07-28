@@ -7901,16 +7901,17 @@ async function createRanch(email, password, ranchName) {
   const ranchId  = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   const joinCode = makeJoinCode();
 
-  const batch = writeBatch(db);
-  batch.set(doc(db, 'ranches', ranchId), {
+  /* Not a batch. The ranch document has to reach the server BEFORE the member
+     row, because the rules read it to decide whether you are the owner. Inside
+     a batch the rules cannot see it yet, so all three writes get denied. */
+  await setDoc(doc(db, 'ranches', ranchId), {
     name: (ranchName || '').trim() || 'My Ranch',
     ownerUid: me, joinCode: joinCode, createdAt: serverTimestamp()
   });
-  batch.set(doc(db, 'ranches', ranchId, 'members', me), {
+  await setDoc(doc(db, 'ranches', ranchId, 'members', me), {
     email: cred.user.email, role: 'owner', joinedAt: serverTimestamp()
   });
-  batch.set(doc(db, 'users', me), { email: cred.user.email, ranchId: ranchId });
-  await batch.commit();
+  await setDoc(doc(db, 'users', me), { email: cred.user.email, ranchId: ranchId });
 }
 
 /* Invite strings look like  r1a2b3c4d:PQRS7T9K  — ranch id, colon, join code.
