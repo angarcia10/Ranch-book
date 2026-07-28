@@ -7512,7 +7512,6 @@ function startApp() {
   setUpBackButton();
 
   /* 6. Turn on offline support. */
-  registerServiceWorker();
 }
 
 /* index.html marks where an icon goes with an empty span carrying a class
@@ -7623,19 +7622,6 @@ function setUpBackButton() {
   });
 }
 
-/* Registers the service worker, which is what lets the app open with no
-   signal. It only works over http(s) — opening the file directly from the
-   file system skips this, and that's fine. */
-function registerServiceWorker() {
-  if (!('serviceWorker' in navigator)) return;
-  if (location.protocol === 'file:') return;
-
-  navigator.serviceWorker.register('sw.js').catch(function () {
-    /* Offline support just isn't available here. The app still works. */
-  });
-}
-
-
 /* Start once the page is ready. */
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', startApp);
@@ -7679,7 +7665,7 @@ import {
   signOut, onAuthStateChanged, sendPasswordResetEmail
 } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js';
 import {
-  initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+  getFirestore,
   collection, doc, setDoc, deleteDoc, getDoc, onSnapshot,
   serverTimestamp, writeBatch
 } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js';
@@ -7703,12 +7689,9 @@ const firebaseConfig = {
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-/* persistentLocalCache is what makes this offline-first. Reads come from an
-   on-disk copy, writes queue on disk and flush when signal returns, and the
-   queue survives closing the app. No hand-rolled sync engine. */
-const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
-});
+/* No local cache. Every read and write goes to the server, so a write the
+   rules reject fails loudly instead of looking like it succeeded. */
+const db = getFirestore(app);
 
 const S = { ranchId: null, role: null, ranchName: '', firstSnap: true, unsub: null };
 
@@ -7965,6 +7948,8 @@ async function leave() {
    variables that already exist, so all four themes reach it.               */
 
 const GATE_ID = 'cloudGate';
+let gateSetMode = null;
+let gateFail    = null;
 
 function buildGate() {
   if (document.getElementById(GATE_ID)) return;
@@ -8114,11 +8099,17 @@ function buildGate() {
     });
   });
 
+  gateSetMode = setMode;
+  gateFail    = fail;
   setMode('in');
 }
 
 function showGate(on) {
   buildGate();
+  /* Always come back on the Sign in tab. Without this the screen reopens on
+     whichever tab was last used, and someone who joined with an invite code
+     lands on a Join form with no way to simply sign in. */
+  if (on && gateSetMode) gateSetMode('in');
   document.getElementById(GATE_ID).style.display = on ? '' : 'none';
 }
 
@@ -8216,7 +8207,9 @@ onAuthStateChanged(auth, async function (user) {
 
     if (!S.ranchId) {
       showGate(true);
-      say('That account is not attached to a ranch yet.', 'warn');
+      /* Not a toast: toasts render underneath this screen and cannot be seen. */
+      if (gateFail) gateFail('That account is signed in but not attached to a ranch. ' +
+                             'Ask the ranch owner for a current invite code, then use the Join tab.');
       return;
     }
 
@@ -8245,6 +8238,7 @@ window.addEventListener('DOMContentLoaded', function () {
   appReady = true;
   buildGate();
   buildCloudSection();
+  paintNetGate();
   if (!auth.currentUser) showGate(true);
   waiting.splice(0).forEach(function (fn) { fn(); });
 });
@@ -8257,6 +8251,41 @@ if (typeof window.openSettings === 'function') {
     paintCloudSection();
   };
 }
+
+/* === CONNECTION REQUIRED =================================================
+   Online only, on purpose. No signal, no app — that way what is on the screen
+   is always what the server actually has.                                  */
+
+const NET_ID = 'netGate';
+
+function buildNetGate() {
+  if (document.getElementById(NET_ID)) return;
+  const el = document.createElement('div');
+  el.id = NET_ID;
+  el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-modal', 'true');
+  el.setAttribute('aria-label', 'No connection');
+  el.style.cssText =
+    'position:fixed;inset:0;z-index:9500;background:var(--bg);' +
+    'overflow-y:auto;display:none;padding:var(--s-5)';
+  el.innerHTML =
+    '<div style="max-width:26rem;margin:0 auto;padding-top:var(--s-7);text-align:center">' +
+      '<h2 style="font-size:var(--fs-xl);color:var(--text);margin:0">No connection</h2>' +
+      '<p class="small" style="color:var(--text-2);margin-top:var(--s-3)">' +
+        'Ranch Book needs a signal so the whole crew sees the same herd. ' +
+        'It picks up again on its own as soon as you are back in range.</p>' +
+    '</div>';
+  document.body.appendChild(el);
+}
+
+function paintNetGate() {
+  buildNetGate();
+  document.getElementById(NET_ID).style.display = navigator.onLine ? 'none' : '';
+}
+
+window.addEventListener('online',  paintNetGate);
+window.addEventListener('offline', paintNetGate);
+
 
 /* A small handle for the console, and for anything you add later. */
 window.RBCloud = {
