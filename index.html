@@ -2400,17 +2400,24 @@ select.fi {
     <div class="sheet-body">
       <div class="two">
         <div>
-          <label class="fl" for="calvedDate">Calved on</label>
-          <input class="fi" type="date" id="calvedDate">
+          <label class="fl" for="calvedOutcome">Outcome</label>
+          <select class="fi" id="calvedOutcome" onchange="onCalvedOutcomeChange()"></select>
         </div>
         <div>
-          <label class="fl" for="calvedTag">Calf tag</label>
-          <input class="fi" type="text" id="calvedTag" placeholder="Leave blank if not tagged"
-                 autocomplete="off" oninput="hideFieldError('calvedTag')">
+          <label class="fl" for="calvedDate" id="calvedDateLabel">Calved on</label>
+          <input class="fi" type="date" id="calvedDate" oninput="hideFieldError('calvedDate')">
         </div>
       </div>
-      <div class="ferr" id="calvedTagErr"></div>
-      <div class="two">
+      <div class="ferr" id="calvedDateErr"></div>
+
+      <div id="calvedTagWrap">
+        <label class="fl" for="calvedTag">Calf tag</label>
+        <input class="fi" type="text" id="calvedTag" placeholder="Leave blank if not tagged"
+               autocomplete="off" oninput="hideFieldError('calvedTag')">
+        <div class="ferr" id="calvedTagErr"></div>
+      </div>
+
+      <div class="two" id="calvedCalfWrap">
         <div>
           <label class="fl" for="calvedSex">Sex</label>
           <select class="fi" id="calvedSex">
@@ -2424,12 +2431,19 @@ select.fi {
           <input class="fi" type="number" id="calvedWeight" placeholder="Optional" inputmode="numeric">
         </div>
       </div>
-      <div>
+
+      <div id="calvedSireWrap">
         <label class="fl" for="calvedSire">Sire's breed</label>
         <select class="fi" id="calvedSire"></select>
       </div>
-      <p class="fhint">This sets the cow back to Open and, if you give a tag, creates the
-        calf's own profile.</p>
+
+      <div id="calvedNotesWrap">
+        <label class="fl" for="calvedNotes">Notes</label>
+        <textarea class="fi" id="calvedNotes" rows="2" maxlength="400"
+                  placeholder="Optional — cause, if known"></textarea>
+      </div>
+
+      <p class="fhint" id="calvedHint"></p>
     </div>
     <div class="sheet-foot">
       <button type="button" class="btn btn-ghost" onclick="closeSheet('calvedSheet')">Cancel</button>
@@ -3246,6 +3260,48 @@ var HEALTH_TYPES = [
 
 function healthType(id) {
   return HEALTH_TYPES.find(function (t) { return t.id === id; }) || HEALTH_TYPES[5];
+}
+
+
+/* === CALVING OUTCOMES ====================================================
+   What became of a pregnancy. Stored as `outcome` on the calving record kept
+   on the cow. Records written by earlier versions have no outcome field and
+   are read as 'live', so nothing needs converting.
+
+     calving — did she carry to term? Only these set lastCalvingDate, which
+               is what her calving interval is worked out from. Counting an
+               abortion as a calving would quietly corrupt every fertility
+               figure in the app.
+     tag     — is a calf tag asked for? Only a live calf gets its own profile.
+     calf    — are sex, birth weight and sire's breed asked for?
+   ========================================================================== */
+var CALVING_OUTCOMES = [
+  { id: 'live',       label: 'Live calf',  dateLabel: 'Calved on',
+    calving: true,  tag: true,  calf: true,  notes: false,
+    verb: 'Born',       badge: '',          past: 'Calving recorded' },
+  { id: 'doa',        label: 'DOA',        dateLabel: 'Calved on',
+    calving: true,  tag: false, calf: true,  notes: true,
+    verb: 'Born',       badge: 'b-danger',  past: 'DOA calving recorded' },
+  { id: 'aborted',    label: 'Aborted',    dateLabel: 'Date aborted',
+    calving: false, tag: false, calf: false, notes: true,
+    verb: 'Aborted',    badge: 'b-warn',    past: 'Abortion recorded' },
+  { id: 'reabsorbed', label: 'Reabsorbed', dateLabel: 'Date found open',
+    calving: false, tag: false, calf: false, notes: true,
+    verb: 'Found open', badge: 'b-info',    past: 'Reabsorption recorded' }
+];
+
+function outcomeInfo(id) {
+  return CALVING_OUTCOMES.filter(function (o) { return o.id === id; })[0] || CALVING_OUTCOMES[0];
+}
+
+/* A record with no outcome field predates this feature and was a live calf. */
+function calvingOutcome(rec) {
+  return outcomeInfo(rec && rec.outcome).id;
+}
+
+/* Did this record represent carrying to term? */
+function isBirthRecord(rec) {
+  return outcomeInfo(rec && rec.outcome).calving;
 }
 
 
@@ -5084,20 +5140,32 @@ function calvesTabHtml(cow) {
   });
 
   extras.forEach(function (rec, i) {
+    var o = outcomeInfo(rec.outcome);
     var meta = [];
-    if (rec.calvingDate) meta.push('Born ' + fmtDate(rec.calvingDate));
+    if (rec.calvingDate) meta.push(o.verb + ' ' + fmtDate(rec.calvingDate));
     else if (rec.year) meta.push('Year ' + rec.year);
-    var cross = calfRecordBreed(cow, rec);
+    if (rec.weight) meta.push(commas(rec.weight) + ' lbs');
+    var cross = o.calf ? calfRecordBreed(cow, rec) : '';
 
-    items.push('<button type="button" class="calf-chip" onclick="openCalfRecord(\'' + esc(cow.id) + '\',' + i + ')">' +
-      '<span class="cr-ico">' + sexIcon(rec.sex, 18) + '</span>' +
+    /* A live calf record can be opened and edited. There is nothing to edit
+       on an abortion or a reabsorption, so those are plain rows. */
+    var openable = o.id === 'live';
+    var badge = o.badge
+      ? '<span class="badge ' + o.badge + '">' + esc(o.label) + '</span>'
+      : '<span class="badge b-outline">No profile</span>';
+
+    var inner =
+      '<span class="cr-ico">' + (o.calf ? sexIcon(rec.sex, 18) : icon('info', 18)) + '</span>' +
       '<span class="cc-main">' +
-        '<span class="cc-tag">' + esc(rec.tag || 'No tag') + '</span>' +
+        '<span class="cc-tag">' + esc(o.tag ? (rec.tag || 'No tag') : o.label) + '</span>' +
         '<span class="cc-meta">' + esc(meta.join(' · ')) + '</span>' +
         (cross ? '<span class="cc-meta">' + esc(cross) + '</span>' : '') +
-      '</span>' +
-      '<span class="badge b-outline">No profile</span>' +
-    '</button>');
+        (rec.notes ? '<span class="cc-meta">' + esc(rec.notes) + '</span>' : '') +
+      '</span>' + badge;
+
+    items.push(openable
+      ? '<button type="button" class="calf-chip" onclick="openCalfRecord(\'' + esc(cow.id) + '\',' + i + ')">' + inner + '</button>'
+      : '<div class="calf-chip">' + inner + '</div>');
   });
 
   var body = items.length
@@ -5193,10 +5261,16 @@ function confirmSold() {
 function openCalvedSheet() {
   var a = findAnimal(currentAnimalId);
   if (!a) return;
+  $('calvedOutcome').innerHTML = CALVING_OUTCOMES.map(function (o) {
+    return '<option value="' + esc(o.id) + '">' + esc(o.label) + '</option>';
+  }).join('');
+  $('calvedOutcome').value = 'live';
+
   $('calvedDate').value = today();
   $('calvedTag').value = '';
   $('calvedSex').value = 'heifer';
   $('calvedWeight').value = '';
+  $('calvedNotes').value = '';
 
   var sireOpts = '<option value="">— Unknown sire —</option>';
   BREEDS.forEach(function (b) {
@@ -5205,46 +5279,93 @@ function openCalvedSheet() {
   $('calvedSire').innerHTML = sireOpts;
 
   hideFieldError('calvedTag');
+  hideFieldError('calvedDate');
+  onCalvedOutcomeChange();
   openSheet('calvedSheet');
+}
+
+/* Shows only the fields that outcome needs, and explains what saving will do.
+   Kept as one function so the sheet can never show a field that doesn't
+   apply — a birth weight for a reabsorbed pregnancy, say. */
+function onCalvedOutcomeChange() {
+  var o = outcomeInfo($('calvedOutcome').value);
+
+  $('calvedDateLabel').textContent = o.dateLabel;
+  $('calvedTagWrap').classList.toggle('hidden', !o.tag);
+  $('calvedCalfWrap').classList.toggle('hidden', !o.calf);
+  $('calvedSireWrap').classList.toggle('hidden', !o.calf);
+  $('calvedNotesWrap').classList.toggle('hidden', !o.notes);
+
+  hideFieldError('calvedTag');
+  hideFieldError('calvedDate');
+
+  $('calvedHint').textContent =
+      o.id === 'live' ? 'Sets her back to Open. Give a tag and the calf gets its own profile.'
+    : o.id === 'doa'  ? 'Sets her back to Open. Still counts as a calving, so her calving interval stays right. No calf profile is created.'
+    :                   'Sets her back to Open. Deliberately does not count as a calving, so her last calving date is left alone.';
 }
 
 function saveCalving() {
   var cow = findAnimal(currentAnimalId);
   if (!cow) return;
 
+  var o = outcomeInfo($('calvedOutcome').value);
   var date = $('calvedDate').value || today();
-  if (date > today()) { showFieldError('calvedTag', 'That calving date is in the future.'); return; }
+  if (date > today()) {
+    showFieldError('calvedDate', 'That date is in the future.');
+    return;
+  }
 
-  var tag = $('calvedTag').value.trim();
   var before = snapshotHerd();
+  if (!cow.calves) cow.calves = [];
 
-  /* A calf without a tag is still worth recording — just skip the profile. */
+  /* The record always gets written, tagged or not. An earlier version only
+     wrote it when a tag was given, so untagged calvings vanished entirely. */
+  var rec = { outcome: o.id, calvingDate: date };
+
+  if (o.notes) {
+    var note = $('calvedNotes').value.trim();
+    if (note) rec.notes = note;
+  }
+
+  if (o.calf) {
+    rec.sex = $('calvedSex').value;
+    rec.sireBreed = $('calvedSire').value;
+    var w = toNum($('calvedWeight').value);
+    if (w !== null) rec.weight = w;
+  }
+
+  /* Only a live calf becomes an animal in the herd. */
+  var tag = o.tag ? $('calvedTag').value.trim() : '';
   if (tag) {
     var calf = upgradeAnimal({
       id: uid(), type: 'calf', tag: tag,
-      sex: $('calvedSex').value,
+      sex: rec.sex,
       dob: date, damId: cow.id, dam: cow.tag,
-      sireBreed: $('calvedSire').value,
+      sireBreed: rec.sireBreed,
       damBreed: animalBreed(cow),
-      status: 'active'
+      status: 'active',
+      group: cow.group || ''      /* a calf starts in its mother's group */
     });
-    var w = toNum($('calvedWeight').value);
-    if (w !== null) addWeight(calf, date, w);
+    if (rec.weight !== undefined) addWeight(calf, date, rec.weight);
     HERD.push(calf);
-
-    if (!cow.calves) cow.calves = [];
-    cow.calves.push({ tag: tag, calvingDate: date, sex: calf.sex, sireBreed: calf.sireBreed, linkedId: calf.id });
+    rec.tag = tag;
+    rec.linkedId = calf.id;
   }
+
+  cow.calves.push(rec);
 
   cow.pregnancyStatus = 'open';
   cow.expectedCalving = '';
   cow.breedingDate = '';
-  cow.lastCalvingDate = date;
+  /* Only carrying to term counts. Setting this for an abortion would make her
+     calving interval read as though she had produced a calf. */
+  if (o.calving) cow.lastCalvingDate = date;
 
   saveHerd();
   closeSheet('calvedSheet');
   reloadAnimal();
-  toast('Calving recorded for ' + animalLabel(cow), {
+  toast(o.past + ' for ' + animalLabel(cow), {
     kind: 'ok',
     action: 'Undo',
     onAction: function () { restoreHerd(before); reloadAnimal(); }
@@ -6291,6 +6412,7 @@ var REPORTS = [
   { key: 'calves_age', title: 'Calves by age',        icon: 'calf',        wide: false, draw: drawCalfAges,   csv: csvCalfAges },
   { key: 'breeds',     title: 'Breed breakdown',      icon: 'breed',       wide: true,  draw: drawBreeds,     csv: csvBreeds },
   { key: 'calving_year', title: 'Calves born by year', icon: 'calendar',   wide: false, draw: drawCalvingYear, csv: csvCalvingYear },
+  { key: 'calving_outcomes', title: 'Calving outcomes', icon: 'calf',      wide: false, draw: drawCalvingOutcomes, csv: csvCalvingOutcomes },
   { key: 'status',     title: 'Herd status',          icon: 'clipboard',   wide: false, draw: drawStatus,     csv: csvStatus }
 ];
 
@@ -7032,6 +7154,8 @@ function calvesByYear() {
     (cow.calves || []).forEach(function (rec) {
       if (rec.linkedId && findAnimal(rec.linkedId)) return;
       if (!rec.calvingDate) return;
+      /* An abortion or reabsorption is not a birth. */
+      if (!isBirthRecord(rec)) return;
       var y = rec.calvingDate.slice(0, 4);
       years[y] = (years[y] || 0) + 1;
     });
@@ -7059,7 +7183,67 @@ function csvCalvingYear() {
 
 
 /* ==========================================================================
-   11. HERD STATUS
+   11. CALVING OUTCOMES
+   ========================================================================== */
+function allCalvingRecords() {
+  var out = [];
+  HERD.forEach(function (cow) {
+    if (cow.type !== 'cow') return;
+    (cow.calves || []).forEach(function (rec) { out.push({ cow: cow, rec: rec }); });
+  });
+  return out;
+}
+
+function calvingOutcomeCounts() {
+  var counts = {};
+  CALVING_OUTCOMES.forEach(function (o) { counts[o.id] = 0; });
+  allCalvingRecords().forEach(function (r) { counts[calvingOutcome(r.rec)]++; });
+  return counts;
+}
+
+function drawCalvingOutcomes() {
+  var counts = calvingOutcomeCounts();
+  var total = CALVING_OUTCOMES.reduce(function (n, o) { return n + counts[o.id]; }, 0);
+  if (!total) return noData('No calvings recorded yet.');
+
+  var colours = { live: 'var(--ok)', doa: 'var(--danger)',
+                  aborted: 'var(--warn)', reabsorbed: 'var(--info)' };
+
+  var items = CALVING_OUTCOMES.filter(function (o) { return counts[o.id]; }).map(function (o) {
+    return { key: o.id, label: o.label, value: counts[o.id],
+             subValue: Math.round(counts[o.id] / total * 100) + '%',
+             color: colours[o.id] };
+  });
+
+  var lost = total - counts.live;
+  return barsHtml(items) +
+    '<div class="mt-3">' +
+      statRow('Pregnancies recorded', String(total)) +
+      statRow('Live calves', String(counts.live), 'var(--ok)') +
+      statRow('Lost', String(lost), lost ? 'var(--danger)' : null,
+              null, 'DOA, aborted and reabsorbed together') +
+      statRow('Live calf rate', Math.round(counts.live / total * 100) + '%') +
+    '</div>';
+}
+
+function csvCalvingOutcomes() {
+  var rows = [['Cow', 'Date', 'Outcome', 'Calf tag', 'Sex', 'Birth weight', 'Notes']];
+  allCalvingRecords()
+    .sort(function (a, b) {
+      return String(b.rec.calvingDate || '').localeCompare(String(a.rec.calvingDate || ''));
+    })
+    .forEach(function (r) {
+      var o = outcomeInfo(r.rec.outcome);
+      rows.push([r.cow.tag, r.rec.calvingDate || '', o.label, r.rec.tag || '',
+                 r.rec.sex || '', r.rec.weight === undefined ? '' : r.rec.weight,
+                 r.rec.notes || '']);
+    });
+  return rows;
+}
+
+
+/* ==========================================================================
+   12. HERD STATUS
    ========================================================================== */
 function drawStatus() {
   var counts = {};
