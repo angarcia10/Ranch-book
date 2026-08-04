@@ -6,10 +6,9 @@
 <title>Ranch Book</title>
 <!-- This file IS the app. Edit it directly.
      It was once generated from css/ and js/ by build-single-file.py.
-     Those folders and that script are retired — see git history if
-     you ever need them. Do not run that script again; it would
-     overwrite this file and remove the Firebase cloud block at the
-     bottom. -->
+     Those folders and that script are retired. Do not run that script
+     again; it would overwrite this file and remove the Firebase cloud
+     block at the bottom. See README.md before changing anything. -->
 <meta name="description" content="Track your cattle herd: breeding, health, weights and calves.">
 
 <!-- Lets the app be installed to the home screen and work with no signal -->
@@ -1761,6 +1760,10 @@ select.fi {
   <!-- Warnings: withdrawal periods, overdue cows, save problems -->
   <div class="alert-strip" id="alertStrip"></div>
 
+  <!-- Calving groups. Stays hidden until at least two groups are in use. -->
+  <div class="seg" role="tablist" aria-label="Filter by calving group"
+       id="groupSeg" style="display:none;margin-bottom:var(--s-3)"></div>
+
   <!-- Type filter, search and filters. One row on a desktop, stacked on a phone. -->
   <div class="toolbar">
   <div class="seg" role="tablist" aria-label="Filter by animal type">
@@ -1805,6 +1808,11 @@ select.fi {
       <option value="deceased">Deceased</option>
     </select>
     <button type="button" class="btn btn-sm btn-primary" id="batchApply" onclick="batchSetStatus()" disabled>Apply</button>
+    <select id="batchGroup" class="fi" style="min-height:38px;width:auto;padding:0 var(--s-2)"
+            aria-label="Group to move the selected animals into"
+            onchange="batchSetGroup()">
+      <option value="">Set group…</option>
+    </select>
     <button type="button" class="btn btn-sm btn-danger" id="batchDelete" onclick="batchDeleteSelected()" disabled>Delete</button>
     <button type="button" class="icon-btn" style="background:none;color:var(--text-2);width:34px;height:34px"
             onclick="exitSelectMode()" aria-label="Leave select mode"><span class="i-close"></span></button>
@@ -1924,6 +1932,15 @@ select.fi {
           <label class="fl" for="fStatus">Status</label>
           <select class="fi" id="fStatus" onchange="onStatusChange()"></select>
         </div>
+      </div>
+
+      <div>
+        <label class="fl" for="fGroup">Calving group</label>
+        <input class="fi" type="text" id="fGroup" list="fGroupOptions"
+               maxlength="20" placeholder="Fall, Spring…" autocomplete="off">
+        <datalist id="fGroupOptions"></datalist>
+        <p class="fhint">Leave blank if you run one herd. Type a new name to
+           create a group.</p>
       </div>
 
       <div id="fSoldWrap" class="hidden">
@@ -3172,6 +3189,45 @@ var BREED_CODES = {
 };
 
 
+/* === CALVING GROUPS ======================================================
+   A group is a name the rancher types — "Fall", "Spring", "Replacements".
+   The two below are only suggestions. The real list is these plus whatever
+   is already in use on an animal, exactly like the breed list works.
+   ========================================================================== */
+var GROUPS = ['Fall', 'Spring'];
+var GROUP_MAX = 20;
+
+/* Tidies a typed name so "fall", "Fall " and "FALL" all land in one group
+   instead of silently splitting the herd three ways. If a group with that
+   spelling already exists, its spelling wins. */
+function cleanGroup(v) {
+  var s = String(v == null ? '' : v).trim().replace(/\s+/g, ' ').slice(0, GROUP_MAX);
+  if (!s) return '';
+  var match = groupList().filter(function (g) {
+    return g.toLowerCase() === s.toLowerCase();
+  })[0];
+  return match || s;
+}
+
+/* Every group name available to pick: the defaults plus any in use. */
+function groupList() {
+  var seen = {};
+  GROUPS.forEach(function (g) { seen[g.toLowerCase()] = g; });
+  HERD.forEach(function (a) {
+    if (a.group && !seen[a.group.toLowerCase()]) seen[a.group.toLowerCase()] = a.group;
+  });
+  return Object.keys(seen).sort().map(function (k) { return seen[k]; });
+}
+
+/* Only the groups an animal is actually in. Decides whether the group
+   switcher is worth showing at all. */
+function groupsInUse() {
+  var seen = {};
+  HERD.forEach(function (a) { if (a.group) seen[a.group] = true; });
+  return Object.keys(seen).sort();
+}
+
+
 /* === HEALTH RECORD TYPES =================================================
    >>> To add a kind of health record, add a line here.
      id       — stored in the data; never change an existing id
@@ -3432,9 +3488,9 @@ function overdueCows() {
 
 
 /* === HERD TOTALS ========================================================= */
-function herdStats() {
+function herdStats(list) {
   var s = { cow: 0, bull: 0, calf: 0, active: 0, sold: 0, deceased: 0 };
-  HERD.forEach(function (a) {
+  (list || HERD).forEach(function (a) {
     if (a.status === 'sold') { s.sold++; return; }
     if (a.status === 'deceased') { s.deceased++; return; }
     s.active++;
@@ -3517,7 +3573,7 @@ function upgradeAnimal(a) {
   if (a.pregCheckMethod === undefined) a.pregCheckMethod = '';
 
   ['tag', 'breed', 'color', 'dob', 'age', 'acquired', 'notes', 'sire',
-   'sireBreed', 'dam', 'bcs'].forEach(function (k) {
+   'sireBreed', 'dam', 'bcs', 'group'].forEach(function (k) {
     if (a[k] === undefined || a[k] === null) a[k] = '';
   });
 
@@ -3813,6 +3869,71 @@ function refreshAll() {
 function goHerd() { navTo('herd'); }
 
 
+/* === CALVING GROUP SWITCHER ==============================================
+   Which group the herd screen is showing. Remembered between sessions, so
+   opening the app puts you back where you left off.
+   ========================================================================== */
+var groupFilter = 'all';         /* 'all' | a group name | '(none)' */
+
+function setGroupFilter(g) {
+  groupFilter = g;
+  writeSettings({ groupFilter: g });
+  if (selectMode) exitSelectMode();
+  renderHerd();
+}
+
+/* The animals the screen is currently scoped to. */
+function groupAnimals() {
+  if (groupFilter === 'all') return HERD;
+  if (groupFilter === '(none)') {
+    return HERD.filter(function (a) { return !a.group; });
+  }
+  return HERD.filter(function (a) { return a.group === groupFilter; });
+}
+
+function renderGroupRow() {
+  var seg = $('groupSeg');
+  if (!seg) return;
+
+  var used = groupsInUse();
+
+  /* One group or none is not a choice worth showing. */
+  if (used.length < 2) {
+    seg.style.display = 'none';
+    seg.innerHTML = '';
+    if (groupFilter !== 'all') { groupFilter = 'all'; writeSettings({ groupFilter: 'all' }); }
+    return;
+  }
+
+  var anyUnassigned = HERD.some(function (a) { return !a.group; });
+  var tabs = ['all'].concat(used);
+  if (anyUnassigned) tabs.push('(none)');
+
+  /* The group we were looking at may have been renamed or emptied. */
+  if (tabs.indexOf(groupFilter) < 0) groupFilter = 'all';
+
+  seg.innerHTML = tabs.map(function (g, i) {
+    var label = g === 'all' ? 'All' : g === '(none)' ? 'No group' : g;
+    var n = herdStats(
+      g === 'all' ? HERD
+      : g === '(none)' ? HERD.filter(function (a) { return !a.group; })
+      : HERD.filter(function (a) { return a.group === g; })
+    ).active;
+    return '<button type="button" class="seg-btn" role="tab" data-i="' + i + '" ' +
+      'aria-selected="' + (groupFilter === g ? 'true' : 'false') + '">' +
+      esc(label) + ' <span class="c">' + n + '</span></button>';
+  }).join('');
+
+  /* Handlers are attached rather than written into the HTML, so a group name
+     containing a quote or apostrophe can't break the button. */
+  $$('.seg-btn', seg).forEach(function (b) {
+    b.onclick = function () { setGroupFilter(tabs[+b.dataset.i]); };
+  });
+
+  seg.style.display = '';
+}
+
+
 /* === FILTER AND SORT SETTINGS ============================================ */
 var typeFilter = 'all';       /* all | cow | bull | calf */
 var FILTERS = {};             /* whatever the filter sheet has applied */
@@ -3833,6 +3954,7 @@ var SORT_OPTIONS = [
 
 /* === THE WHOLE HERD SCREEN =============================================== */
 function renderHerd() {
+  renderGroupRow();
   renderStats();
   if (typeof renderSidebarTotals === 'function') renderSidebarTotals();
   renderAlerts();
@@ -3844,7 +3966,7 @@ function renderHerd() {
 
 /* === COUNTERS ============================================================ */
 function renderStats() {
-  var s = herdStats();
+  var s = herdStats(groupAnimals());
   $('stCows').textContent   = s.cow;
   $('stBulls').textContent  = s.bull;
   $('stCalves').textContent = s.calf;
@@ -3937,7 +4059,7 @@ function setTypeFilter(t) {
 }
 
 function renderTypeButtons() {
-  var s = herdStats();
+  var s = herdStats(groupAnimals());
   var counts = { all: s.active, cow: s.cow, bull: s.bull, calf: s.calf };
   ['all', 'cow', 'bull', 'calf'].forEach(function (t) {
     var b = $('seg-' + t);
@@ -4058,7 +4180,7 @@ function renderChips() {
 function visibleAnimals() {
   var q = ($('search').value || '').trim().toLowerCase();
 
-  var list = HERD.filter(function (a) {
+  var list = groupAnimals().filter(function (a) {
     if (typeFilter !== 'all' && a.type !== typeFilter) return false;
 
     /* The All tab hides sold and dead animals unless you ask for them. */
@@ -4311,6 +4433,14 @@ function toggleSelectMode() {
 
 function enterSelectMode(firstId) {
   selectMode = true;
+  var bg = $('batchGroup');
+  if (bg) {
+    bg.innerHTML = '<option value="">Set group…</option>' +
+      groupList().map(function (g) {
+        return '<option value="' + escAttr(g) + '">' + esc(g) + '</option>';
+      }).join('') +
+      '<option value="(none)">No group</option>';
+  }
   $('list').classList.add('select-mode');
   $('batchBar').classList.add('on');
   $('selectBtn').setAttribute('aria-pressed', 'true');
@@ -4368,6 +4498,42 @@ function updateBatchBar() {
   $('batchCount').textContent = n ? plural(n, 'animal') + ' selected' : 'Tap animals to select';
   $('batchApply').disabled = !n;
   $('batchDelete').disabled = !n;
+}
+
+/* Moves every selected animal into one group. Same shape as
+   batchSetStatus(), including the Undo. */
+function batchSetGroup() {
+  var sel = $('batchGroup');
+  var v = sel.value;
+  var ids = selectedList();
+  if (!v || !ids.length) { sel.value = ''; return; }
+
+  var g = v === '(none)' ? '' : cleanGroup(v);
+
+  askConfirm({
+    title: g ? 'Move ' + plural(ids.length, 'animal') + ' to ' + g + '?'
+             : 'Take ' + plural(ids.length, 'animal') + ' out of their group?',
+    body: ids.map(function (i) { return animalLabel(findAnimal(i)); }).join(', '),
+    confirmLabel: g ? 'Move' : 'Remove'
+  }).then(function (yes) {
+    sel.value = '';
+    if (!yes) return;
+
+    var before = snapshotHerd();
+    ids.forEach(function (id) {
+      var a = findAnimal(id);
+      if (a) a.group = g;
+    });
+    saveHerd();
+    exitSelectMode();
+    renderHerd();
+
+    toast(g ? 'Moved ' + plural(ids.length, 'animal') + ' to ' + g
+            : 'Took ' + plural(ids.length, 'animal') + ' out of their group', {
+      action: 'Undo',
+      onAction: function () { restoreHerd(before); toast('Change undone', { kind: 'ok' }); }
+    });
+  });
 }
 
 function batchSetStatus() {
@@ -5544,6 +5710,10 @@ function fillFormDropdowns() {
     return '<option value="' + esc(s.id) + '">' + esc(s.label) + '</option>';
   }).join('');
 
+  $('fGroupOptions').innerHTML = groupList().map(function (g) {
+    return '<option value="' + escAttr(g) + '"></option>';
+  }).join('');
+
   $('fPregMethod').innerHTML = PREG_CHECK_METHODS.map(function (m) {
     return '<option value="' + esc(m.id) + '">' + esc(m.label) + '</option>';
   }).join('');
@@ -5575,6 +5745,7 @@ function openForm(id, motherId) {
     $('fSire').value   = a.sire || '';
     $('fSireBreed').value = a.sireBreed || '';
     $('fNotes').value  = a.notes || '';
+    $('fGroup').value  = a.group || '';
 
     var w = currentWeight(a);
     $('fWeight').value = w === null ? '' : w;
@@ -5630,7 +5801,7 @@ function openForm(id, motherId) {
 
 function resetForm() {
   ['fTag', 'fColor', 'fDob', 'fAge', 'fAcquired', 'fWeight', 'fBcs', 'fSire',
-   'fNotes', 'fSoldReason', 'fSoldDate', 'fBreedingDate', 'fCalvingDate',
+   'fNotes', 'fGroup', 'fSoldReason', 'fSoldDate', 'fBreedingDate', 'fCalvingDate',
    'fPregCheckDate'].forEach(function (i) { var el = $(i); if (el) el.value = ''; });
 
   $('fBreed').value = '';
@@ -5958,6 +6129,7 @@ function commitAnimal(tag, weight) {
   a.sire = $('fSire').value.trim();
   a.sireBreed = $('fSireBreed').value;
   a.notes = $('fNotes').value.trim();
+  a.group = cleanGroup($('fGroup').value);
 
   /* --- Breed --- */
   if (type === 'calf') {
@@ -7501,6 +7673,9 @@ function startApp() {
   /* 2. Apply the saved theme, app name and icon. */
   applySettings(readSettings());
 
+  /* 2b. Go back to whichever calving group was last being viewed. */
+  groupFilter = readSettings().groupFilter || 'all';
+
   /* 3. Draw the herd screen. */
   navTo('herd');
 
@@ -7512,6 +7687,7 @@ function startApp() {
   setUpBackButton();
 
   /* 6. Turn on offline support. */
+  registerServiceWorker();
 }
 
 /* index.html marks where an icon goes with an empty span carrying a class
@@ -7622,6 +7798,19 @@ function setUpBackButton() {
   });
 }
 
+/* Registers the service worker, which is what lets the app open with no
+   signal. It only works over http(s) — opening the file directly from the
+   file system skips this, and that's fine. */
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  if (location.protocol === 'file:') return;
+
+  navigator.serviceWorker.register('sw.js').catch(function () {
+    /* Offline support just isn't available here. The app still works. */
+  });
+}
+
+
 /* Start once the page is ready. */
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', startApp);
@@ -7665,7 +7854,7 @@ import {
   signOut, onAuthStateChanged, sendPasswordResetEmail
 } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js';
 import {
-  getFirestore,
+  initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
   collection, doc, setDoc, deleteDoc, getDoc, onSnapshot,
   serverTimestamp, writeBatch
 } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js';
@@ -7689,9 +7878,12 @@ const firebaseConfig = {
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-/* No local cache. Every read and write goes to the server, so a write the
-   rules reject fails loudly instead of looking like it succeeded. */
-const db = getFirestore(app);
+/* persistentLocalCache is what makes this offline-first. Reads come from an
+   on-disk copy, writes queue on disk and flush when signal returns, and the
+   queue survives closing the app. No hand-rolled sync engine. */
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+});
 
 const S = { ranchId: null, role: null, ranchName: '', firstSnap: true, unsub: null };
 
@@ -7884,17 +8076,16 @@ async function createRanch(email, password, ranchName) {
   const ranchId  = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   const joinCode = makeJoinCode();
 
-  /* Not a batch. The ranch document has to reach the server BEFORE the member
-     row, because the rules read it to decide whether you are the owner. Inside
-     a batch the rules cannot see it yet, so all three writes get denied. */
-  await setDoc(doc(db, 'ranches', ranchId), {
+  const batch = writeBatch(db);
+  batch.set(doc(db, 'ranches', ranchId), {
     name: (ranchName || '').trim() || 'My Ranch',
     ownerUid: me, joinCode: joinCode, createdAt: serverTimestamp()
   });
-  await setDoc(doc(db, 'ranches', ranchId, 'members', me), {
+  batch.set(doc(db, 'ranches', ranchId, 'members', me), {
     email: cred.user.email, role: 'owner', joinedAt: serverTimestamp()
   });
-  await setDoc(doc(db, 'users', me), { email: cred.user.email, ranchId: ranchId });
+  batch.set(doc(db, 'users', me), { email: cred.user.email, ranchId: ranchId });
+  await batch.commit();
 }
 
 /* Invite strings look like  r1a2b3c4d:PQRS7T9K  — ranch id, colon, join code.
@@ -7948,8 +8139,6 @@ async function leave() {
    variables that already exist, so all four themes reach it.               */
 
 const GATE_ID = 'cloudGate';
-let gateSetMode = null;
-let gateFail    = null;
 
 function buildGate() {
   if (document.getElementById(GATE_ID)) return;
@@ -8099,17 +8288,11 @@ function buildGate() {
     });
   });
 
-  gateSetMode = setMode;
-  gateFail    = fail;
   setMode('in');
 }
 
 function showGate(on) {
   buildGate();
-  /* Always come back on the Sign in tab. Without this the screen reopens on
-     whichever tab was last used, and someone who joined with an invite code
-     lands on a Join form with no way to simply sign in. */
-  if (on && gateSetMode) gateSetMode('in');
   document.getElementById(GATE_ID).style.display = on ? '' : 'none';
 }
 
@@ -8207,9 +8390,7 @@ onAuthStateChanged(auth, async function (user) {
 
     if (!S.ranchId) {
       showGate(true);
-      /* Not a toast: toasts render underneath this screen and cannot be seen. */
-      if (gateFail) gateFail('That account is signed in but not attached to a ranch. ' +
-                             'Ask the ranch owner for a current invite code, then use the Join tab.');
+      say('That account is not attached to a ranch yet.', 'warn');
       return;
     }
 
@@ -8238,7 +8419,6 @@ window.addEventListener('DOMContentLoaded', function () {
   appReady = true;
   buildGate();
   buildCloudSection();
-  paintNetGate();
   if (!auth.currentUser) showGate(true);
   waiting.splice(0).forEach(function (fn) { fn(); });
 });
@@ -8251,41 +8431,6 @@ if (typeof window.openSettings === 'function') {
     paintCloudSection();
   };
 }
-
-/* === CONNECTION REQUIRED =================================================
-   Online only, on purpose. No signal, no app — that way what is on the screen
-   is always what the server actually has.                                  */
-
-const NET_ID = 'netGate';
-
-function buildNetGate() {
-  if (document.getElementById(NET_ID)) return;
-  const el = document.createElement('div');
-  el.id = NET_ID;
-  el.setAttribute('role', 'dialog');
-  el.setAttribute('aria-modal', 'true');
-  el.setAttribute('aria-label', 'No connection');
-  el.style.cssText =
-    'position:fixed;inset:0;z-index:9500;background:var(--bg);' +
-    'overflow-y:auto;display:none;padding:var(--s-5)';
-  el.innerHTML =
-    '<div style="max-width:26rem;margin:0 auto;padding-top:var(--s-7);text-align:center">' +
-      '<h2 style="font-size:var(--fs-xl);color:var(--text);margin:0">No connection</h2>' +
-      '<p class="small" style="color:var(--text-2);margin-top:var(--s-3)">' +
-        'Ranch Book needs a signal so the whole crew sees the same herd. ' +
-        'It picks up again on its own as soon as you are back in range.</p>' +
-    '</div>';
-  document.body.appendChild(el);
-}
-
-function paintNetGate() {
-  buildNetGate();
-  document.getElementById(NET_ID).style.display = navigator.onLine ? 'none' : '';
-}
-
-window.addEventListener('online',  paintNetGate);
-window.addEventListener('offline', paintNetGate);
-
 
 /* A small handle for the console, and for anything you add later. */
 window.RBCloud = {
